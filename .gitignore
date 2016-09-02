@@ -1,0 +1,5 @@
+.idea/
+*.iml
+CommandExecutor/target/
+Configurator/target/
+target/
