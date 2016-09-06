@@ -19,6 +19,7 @@ public class InteractiveExecutor extends AbstractExecutor {
             synchronized (lock) {
                 if (process == null) {
                     super.execute(command);
+
                     reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                     return;
@@ -27,7 +28,12 @@ public class InteractiveExecutor extends AbstractExecutor {
         }
         log.info("Executing interactive command - " + command.getCommand());
         writer.write(command.getCommand() + ENTER);
-        writer.flush();
+        try {
+            writer.flush();
+        } catch (IOException ex) {
+            log.error(ex);
+        }
+
     }
 
     @Override

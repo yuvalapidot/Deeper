@@ -23,6 +23,10 @@ public class CallStack {
         return callList;
     }
 
+    public int size() {
+        return callList.size();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

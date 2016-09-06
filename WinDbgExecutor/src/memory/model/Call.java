@@ -1,7 +1,5 @@
 package memory.model;
 
-import java.util.Arrays;
-
 public class Call {
 
     public static final int ARGS_COUNT = 4;
@@ -53,21 +51,25 @@ public class Call {
 
         Call call = (Call) o;
 
-        if (childSp != null ? !childSp.equals(call.childSp) : call.childSp != null) return false;
-        if (returnAddress != null ? !returnAddress.equals(call.returnAddress) : call.returnAddress != null)
-            return false;
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        if (!Arrays.equals(args, call.args)) return false;
-        return callSite != null ? callSite.equals(call.callSite) : call.callSite == null;
+        return callSite != null ? getShortName().equals(call.getShortName()) : call.callSite == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = childSp != null ? childSp.hashCode() : 0;
-        result = 31 * result + (returnAddress != null ? returnAddress.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(args);
-        result = 31 * result + (callSite != null ? callSite.hashCode() : 0);
-        return result;
+        return callSite != null ? getShortName().hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return getShortName();
+    }
+
+    private String getShortName() {
+        try {
+            return callSite.substring(0, callSite.indexOf("+"));
+        } catch (Exception e) {
+            return callSite;
+        }
     }
 }
