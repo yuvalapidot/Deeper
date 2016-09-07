@@ -8,6 +8,7 @@ import extractor.ProcessesExtractor;
 import extractor.ThreadExtractor;
 import extractor.VoidExtractor;
 import flag.CrashDumpFileFlag;
+import memory.model.Dump;
 import memory.model.Process;
 import memory.model.Thread;
 import org.apache.logging.log4j.LogManager;
@@ -38,6 +39,14 @@ public class WinDbgAPI {
         int exitStatus = executor.waitFor();
         log.info("WinDbg existed with status - " + exitStatus);
         return exitStatus;
+    }
+
+    public static Dump getDump(String dumpPath, String classification) throws IOException {
+        Dump dump = new Dump(dumpPath);
+        List<Process> processes = getProcessesFromDump(dumpPath);
+        dump.addProcesses(processes);
+        dump.setClassification(classification);
+        return dump;
     }
 
     public static List<Process> getProcessesFromDump(String dump) throws IOException {

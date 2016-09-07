@@ -2,7 +2,6 @@ package extractor;
 
 import api.WinDbgAPI;
 import memory.model.Dump;
-import memory.model.DumpClassification;
 import memory.model.Process;
 
 import java.io.IOException;
@@ -42,9 +41,9 @@ public class WinDbgExtractor {
         for (Future<Dump> future : futures) {
             Dump dump = future.get();
             if (dump.getName().contains("Benign")) {
-                dump.setClassification(DumpClassification.Benign);
+                dump.setClassification("Benign");
             } else if (dump.getName().contains("Malicious")) {
-                dump.setClassification(DumpClassification.Malicious);
+                dump.setClassification("Malicious");
             }
             dumps.add(dump);
         }

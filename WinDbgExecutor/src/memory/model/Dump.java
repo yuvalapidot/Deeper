@@ -7,7 +7,7 @@ import java.util.List;
 public class Dump {
 
     private List<Process> processes;
-    private DumpClassification classification = DumpClassification.Unknown;
+    private String classification = "Unknown";
     private final String name;
 
     public Dump(String name) {
@@ -19,11 +19,11 @@ public class Dump {
         this.processes = processes;
     }
 
-    public DumpClassification getClassification() {
+    public String getClassification() {
         return classification;
     }
 
-    public void setClassification(DumpClassification classification) {
+    public void setClassification(String classification) {
         this.classification = classification;
     }
 
