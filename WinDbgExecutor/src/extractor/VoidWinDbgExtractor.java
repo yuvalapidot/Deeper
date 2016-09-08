@@ -3,7 +3,10 @@ package extractor;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-public class VoidExtractor extends AbstractExtractor {
+/**
+ * A simple extractor that always returns null but wait untill the output is finished.
+ */
+public class VoidWinDbgExtractor extends AbstractWinDbgExtractor {
 
     @Override
     public Object extract(BufferedReader reader) throws IOException {

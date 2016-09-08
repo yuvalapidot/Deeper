@@ -1,6 +1,6 @@
 package writer;
 
-import memory.model.CallGramsTable;
+import model.memory.CallGramsTable;
 
 import java.io.FileWriter;
 import java.io.IOException;

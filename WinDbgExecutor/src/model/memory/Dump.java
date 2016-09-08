@@ -1,5 +1,6 @@
-package memory.model;
+package model.memory;
 
+import java.lang.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

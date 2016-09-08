@@ -13,7 +13,7 @@ public class NonInteractiveExecutor extends AbstractExecutor {
             process.waitFor();
             return extractor.extract(process.getInputStream());
         } catch (InterruptedException e) {
-            log.error("encountered an error while waiting for process to exit", e);
+            log.error("Encountered an error while waiting for process to exit", e);
             return null;
         }
     }

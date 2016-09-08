@@ -1,4 +1,4 @@
-package memory.model;
+package model.memory;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package extractor;
 
-import memory.model.Process;
+import model.memory.Process;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProcessesExtractor extends AbstractExtractor <List<Process>> {
+public class ProcessesWinDbgExtractor extends AbstractWinDbgExtractor<List<Process>> {
 
     @Override
     public List<Process> extract(BufferedReader reader) throws IOException {

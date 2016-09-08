@@ -1,6 +1,6 @@
 package extractor;
 
-import memory.model.Thread;
+import model.memory.Thread;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ThreadExtractor extends AbstractExtractor <List<Thread>> {
+public class ThreadWinDbgExtractor extends AbstractWinDbgExtractor<List<Thread>> {
 
     @Override
     public List<Thread> extract(BufferedReader reader) throws IOException {

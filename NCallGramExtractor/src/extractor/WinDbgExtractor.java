@@ -1,8 +1,8 @@
 package extractor;
 
 import api.WinDbgAPI;
-import memory.model.Dump;
-import memory.model.Process;
+import model.memory.Dump;
+import model.memory.Process;
 
 import java.io.IOException;
 import java.nio.file.Files;

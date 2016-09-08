@@ -3,14 +3,14 @@ package api;
 import command.*;
 import executor.AbstractExecutor;
 import executor.InteractiveExecutor;
-import extractor.CallStackExtractor;
-import extractor.ProcessesExtractor;
-import extractor.ThreadExtractor;
-import extractor.VoidExtractor;
+import extractor.CallStackWinDbgExtractor;
+import extractor.ProcessesWinDbgExtractor;
+import extractor.ThreadWinDbgExtractor;
+import extractor.VoidWinDbgExtractor;
 import flag.CrashDumpFileFlag;
-import memory.model.Dump;
-import memory.model.Process;
-import memory.model.Thread;
+import model.memory.Dump;
+import model.memory.Process;
+import model.memory.Thread;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +20,6 @@ import java.util.List;
 public class WinDbgAPI {
 
     private static final Logger log = LogManager.getLogger(WinDbgAPI.class);
-    public static boolean concurrent = true;
 
     private static AbstractExecutor startWinDbg(String dump) throws IOException {
         log.info("Starting WinDbg with dump file - " + dump);
@@ -28,7 +27,7 @@ public class WinDbgAPI {
         command.appendFlag(new CrashDumpFileFlag(dump));
         InteractiveExecutor executor = new InteractiveExecutor();
         executor.execute(command);
-        executor.getOutput(new VoidExtractor());
+        executor.getOutput(new VoidWinDbgExtractor());
         log.info("WinDbg started and ready for use");
         return executor;
     }
@@ -68,11 +67,10 @@ public class WinDbgAPI {
     public static List<Process> getBasicProcesses(AbstractExecutor executor) throws IOException {
         log.info("Getting all processes");
         executor.execute(new ForEachProcessCommand());
-        return executor.getOutput(new ProcessesExtractor());
+        return executor.getOutput(new ProcessesWinDbgExtractor());
     }
 
     private static void addThreadsToProcesses(AbstractExecutor executor, List<Process> processes) throws IOException {
-        // TODO - add concurrency
         for (Process process : processes) {
             addThreadsToProcess(executor, process);
         }
@@ -81,7 +79,7 @@ public class WinDbgAPI {
     public static void addThreadsToProcess(AbstractExecutor executor, Process process) throws IOException {
         log.info("Getting all threads for process " + process.getId());
         executor.execute(new ProcessCommand(process.getId()));
-        List<Thread> threads = executor.getOutput(new ThreadExtractor());
+        List<Thread> threads = executor.getOutput(new ThreadWinDbgExtractor());
         addCallStackToThreads(executor, threads);
         process.addThreads(threads);
     }
@@ -105,7 +103,7 @@ public class WinDbgAPI {
     public static List<Thread> getBasicThreads(AbstractExecutor executor) throws IOException {
         log.info("Getting all threads");
         executor.execute(new ForEachThreadCommand());
-        return executor.getOutput(new ThreadExtractor());
+        return executor.getOutput(new ThreadWinDbgExtractor());
     }
 
     private static void addCallStackToThreads(AbstractExecutor executor, List<Thread> threads) throws IOException {
@@ -118,6 +116,6 @@ public class WinDbgAPI {
         int flags = 0x16;
         log.info("Getting call stack for thread " + thread.getId());
         executor.execute(new ThreadCommand(thread.getId(), flags));
-        thread.setCallStack(executor.getOutput(new CallStackExtractor()));
+        thread.setCallStack(executor.getOutput(new CallStackWinDbgExtractor()));
     }
 }

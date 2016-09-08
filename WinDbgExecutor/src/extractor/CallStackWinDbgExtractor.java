@@ -1,12 +1,12 @@
 package extractor;
 
-import memory.model.Call;
-import memory.model.CallStack;
+import model.memory.Call;
+import model.memory.CallStack;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 
-public class CallStackExtractor extends AbstractExtractor <CallStack> {
+public class CallStackWinDbgExtractor extends AbstractWinDbgExtractor<CallStack> {
 
     private static final String[] indicators = {"Child-SP", "RetAddr", "Args to Child", "Call Site"};
     private static final int CHILD_SP = 0;

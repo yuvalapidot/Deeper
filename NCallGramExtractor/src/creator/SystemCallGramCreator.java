@@ -1,8 +1,8 @@
 package creator;
 
-import memory.model.*;
-import memory.model.Process;
-import memory.model.Thread;
+import model.memory.*;
+import model.memory.Process;
+import model.memory.Thread;
 
 import java.util.ArrayList;
 import java.util.List;

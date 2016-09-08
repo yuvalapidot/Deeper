@@ -1,8 +1,5 @@
 package exception;
 
-/**
- * Created by yuval on 9/3/2016.
- */
 public class UnexpectedOutputException extends RuntimeException{
 
     public UnexpectedOutputException() {

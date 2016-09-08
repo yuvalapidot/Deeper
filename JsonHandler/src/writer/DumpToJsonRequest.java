@@ -1,6 +1,8 @@
 package writer;
 
-public class DumpToJsonRequest {
+import java.util.Observable;
+
+public class DumpToJsonRequest extends Observable {
 
     private String dumpPath;
     private String jsonPath;
@@ -62,4 +64,5 @@ public class DumpToJsonRequest {
     public void setSkipIfExists(boolean skipIfExists) {
         this.skipIfExists = skipIfExists;
     }
+
 }

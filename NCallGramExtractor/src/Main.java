@@ -1,10 +1,9 @@
 import creator.SystemCallGramCreator;
 import extractor.WinDbgExtractor;
-import memory.model.CallGramsTable;
-import memory.model.Dump;
+import model.memory.CallGramsTable;
+import model.memory.Dump;
 import writer.CsvWriter;
 
-import java.io.Writer;
 import java.util.List;
 
 /**

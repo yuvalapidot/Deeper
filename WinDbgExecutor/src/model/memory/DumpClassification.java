@@ -1,4 +1,4 @@
-package memory.model;
+package model.memory;
 
 public enum DumpClassification {
 
