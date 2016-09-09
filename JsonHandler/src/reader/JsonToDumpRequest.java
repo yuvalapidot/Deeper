@@ -2,12 +2,9 @@ package reader;
 
 import java.util.Observable;
 
-/**
- * Created by yuvalla on 07/09/2016.
- */
 public class JsonToDumpRequest extends Observable {
 
-    String jsonPath;
+    private String jsonPath;
 
     public JsonToDumpRequest(String jsonPath) {
         this.jsonPath = jsonPath;

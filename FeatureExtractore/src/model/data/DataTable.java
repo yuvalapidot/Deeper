@@ -5,33 +5,53 @@ import model.feature.FeatureKey;
 import model.feature.FeatureValue;
 import model.feature.Instance;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataTable {
 
-    List<Instance> instances;
-    Map<FeatureKey, Feature> features;
+    private final Set<Instance> instances;
+    private final Set<Feature> features;
+    private final Map<FeatureKey, Feature> featureMap;
 
     public DataTable() {
-        instances = new ArrayList<>();
-        features = new HashMap<>();
+        instances = new LinkedHashSet<>();
+        features = new LinkedHashSet<>();
+        featureMap = new LinkedHashMap<>();
     }
 
-    public <T> void put(Instance instance, FeatureKey<?, T> featureKey, FeatureValue<T> featureValue) {
-        if (!instances.contains(instance)) {
-            instances.add(instance);
-        }
-        if (!features.keySet().contains(featureKey)) {
-            features.put(featureKey, new Feature<T>());
-        }
-        features.get(featureKey).setValue(instance, featureValue);
+    public <S> void put(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
+        instances.add(instance);
+        getFeature(featureKey).setValue(instance, featureValue);
     }
 
-    public String csvString() {
-        StringBuilder builder = new StringBuilder();
-        return builder.toString();
+    public Set<Instance> getInstances() {
+        return instances;
+    }
+
+    public Set<Feature> getFeatures() {
+        return features;
+    }
+
+    private Feature getFeature(FeatureKey key) {
+        Feature feature = featureMap.get(key);
+        if (feature == null) {
+            feature = new Feature(key);
+            features.add(feature);
+            featureMap.put(key, feature);
+        }
+        return feature;
+    }
+
+    public void append(DataTable table) {
+        this.instances.addAll(table.instances);
+        for (Feature newFeature : features) {
+            Feature feature;
+            if ((feature = featureMap.get(newFeature.getKey())) != null) {
+                feature.append(newFeature);
+            } else {
+                features.add(newFeature);
+                featureMap.put(newFeature.getKey(), newFeature);
+            }
+        }
     }
 }

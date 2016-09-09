@@ -23,6 +23,11 @@ public class FeatureKey <T, S> {
     }
 
     @Override
+    public String toString() {
+        return key.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof FeatureKey)) return false;

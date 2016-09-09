@@ -1,22 +1,35 @@
 package model.feature;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Feature <S> {
 
+    private final FeatureKey<?, S> key;
     private final Map<Instance, FeatureValue<S>> values;
 
-    public Feature() {
-        values = new HashMap<>();
+    public Feature(FeatureKey<?, S> key) {
+        this.key = key;
+        values = new LinkedHashMap<>();
     }
 
-    public Map<Instance, FeatureValue<S>> getValues() {
-        return values;
+    public FeatureValue<S> getValue(Instance instance) {
+        FeatureValue<S> value = values.get(instance);
+        if (value == null) {
+            return new FeatureValue<>(key.getDefaultValue());
+        }
+        return value;
     }
 
     public void setValue(Instance instance, FeatureValue<S> value) {
         values.put(instance, value);
     }
 
+    public FeatureKey<?, S> getKey() {
+        return key;
+    }
+
+    public void append(Feature feature) {
+        values.putAll(feature.values);
+    }
 }
