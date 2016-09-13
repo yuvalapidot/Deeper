@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Configuration {
+
     private static String configFilePath = "resources/config.properties";
     private static volatile Properties properties = null;
     private static final Object lock = new Object();

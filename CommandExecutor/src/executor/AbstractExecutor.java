@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractExecutor {
 
@@ -24,8 +25,18 @@ public abstract class AbstractExecutor {
         try {
             return process.waitFor();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Encountered an error while waiting for process to exit", e);
             return -1;
+        }
+    }
+
+    public boolean waitFor(long timeout, TimeUnit unit) {
+        log.info("Waiting for process to exit");
+        try {
+            return process.waitFor(timeout, unit);
+        } catch (InterruptedException e) {
+            log.error("Encountered an error while waiting for process to exit", e);
+            return false;
         }
     }
 }

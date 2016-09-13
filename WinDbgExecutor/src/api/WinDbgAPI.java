@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class WinDbgAPI {
 
@@ -32,12 +33,12 @@ public class WinDbgAPI {
         return executor;
     }
 
-    private static int quitExecutor(AbstractExecutor executor) throws IOException {
+    private static boolean quitExecutor(AbstractExecutor executor) throws IOException {
         log.info("Quiting WindDbg");
         executor.execute(new QuitCommand());
-        int exitStatus = executor.waitFor();
-        log.info("WinDbg existed with status - " + exitStatus);
-        return exitStatus;
+        boolean exited = executor.waitFor(1, TimeUnit.MINUTES);
+        log.info(exited ? "WinDbg process finished" : "WinDbg process has not finished correctly");
+        return exited;
     }
 
     public static Dump getDump(String dumpPath, String classification) throws IOException {

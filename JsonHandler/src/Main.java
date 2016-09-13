@@ -12,10 +12,10 @@ public class Main {
     private static final String benignDirectory = "D:\\DeepFeaturesExperiment\\Dumps\\Benign";
     private static final String maliciousDirectory = "D:\\DeepFeaturesExperiment\\Dumps\\Malicious";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         JsonDumpWriter writer = new JsonDumpWriter();
-        writer.dumpsToJsons(getDumpToJsonRequestsFromDirectory(benignDirectory, "Benign"), false);
-        writer.dumpsToJsons(getDumpToJsonRequestsFromDirectory(maliciousDirectory, "Malicious"), false);
+        writer.dumpsToJsons(getDumpToJsonRequestsFromDirectory(benignDirectory, "Benign"), true);
+        writer.dumpsToJsons(getDumpToJsonRequestsFromDirectory(maliciousDirectory, "Malicious"), true);
     }
 
     private static List<DumpToJsonRequest> getDumpToJsonRequestsFromDirectory(String path, String classification) throws IOException {

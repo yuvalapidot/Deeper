@@ -2,9 +2,13 @@ package extractor;
 
 import model.data.DataTable;
 
-public interface IFeatureExtractor {
+import java.util.List;
+
+public interface IFeatureExtractor<T> {
 
     public void extract(DataTable table);
 
     public DataTable extract();
+
+    public void setInstances(List<T> instances);
 }

@@ -32,6 +32,11 @@ public class CallGram {
     }
 
     @Override
+    public String toString() {
+        return size() + "CallGram{" + calls + '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof CallGram)) return false;

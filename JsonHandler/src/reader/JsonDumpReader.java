@@ -5,7 +5,6 @@ import model.memory.Dump;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,7 @@ public class JsonDumpReader {
         ObjectMapper mapper = new ObjectMapper();
         Dump dump = null;
         try {
-            dump = mapper.readValue(new File(request.getJsonPath()), Dump.class);
+            dump = mapper.readValue(request.getFile(), Dump.class);
         } catch (IOException e) {
             log.error("Encountered an error while trying to parse JSON: " + request.getJsonPath() + " into Dump", e);
             throw e;
