@@ -9,7 +9,16 @@ public class Dump {
 
     private List<Process> processes;
     private String classification = "Unknown";
-    private final String name;
+    private String name;
+
+    public Dump() {
+    }
+
+    public Dump(String name, String classification, List<Process> processes) {
+        this.name = name;
+        this.classification = classification;
+        this.processes = processes;
+    }
 
     public Dump(String name) {
         this.name = name;

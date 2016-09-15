@@ -2,11 +2,22 @@ package model.memory;
 
 public class Thread {
 
-    private final String id;
+    private String id;
     private String cid;
     private String teb;
     private String win32Thread;
     private CallStack callStack;
+
+    public Thread() {
+    }
+
+    public Thread(String id, String cid, String teb, String win32Thread, CallStack callStack) {
+        this.id = id;
+        this.cid = cid;
+        this.teb = teb;
+        this.win32Thread = win32Thread;
+        this.callStack = callStack;
+    }
 
     public Thread(String id) {
         this.id = id;

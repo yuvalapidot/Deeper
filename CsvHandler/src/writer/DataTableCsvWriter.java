@@ -18,6 +18,10 @@ public class DataTableCsvWriter {
     private static final char CSV_DELIMITER = ',';
     private static final char CSV_NON_DELIMITER = '|';
     private static final char CSV_NEW_LINE = '\n';
+    private static final int CSV_CELL_MAX_LENGTH = 255;
+    private static final String[] NOT_ALLOWED_CSV_CHARACTERS = {"'"};
+
+    private int tooLongCellNameCounter = 0;
 
     public void dataTableToCsv(DataTableToCsvRequest request) throws IOException {
         log.info("Trying to write Data Table into csv: " + request.getCsvPath());
@@ -55,6 +59,13 @@ public class DataTableCsvWriter {
     }
 
     private String csvString(Object o) {
-        return o.toString().replace(CSV_DELIMITER, CSV_NON_DELIMITER);
+        String csvString = o.toString().replace(CSV_DELIMITER, CSV_NON_DELIMITER);
+//        if (csvString.length() > CSV_CELL_MAX_LENGTH) {
+//            csvString = "TooLong" + tooLongCellNameCounter++;
+//        }
+//        for (String s : NOT_ALLOWED_CSV_CHARACTERS) {
+//            csvString.replace(s, "");
+//        }
+        return "\"" + csvString + "\"";
     }
 }

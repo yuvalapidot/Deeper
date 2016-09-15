@@ -6,7 +6,6 @@ import model.feature.FeatureValue;
 import model.feature.Instance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import writer.DataTableCsvWriter;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

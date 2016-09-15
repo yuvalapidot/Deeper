@@ -6,13 +6,26 @@ import java.util.List;
 
 public class Process {
 
-    private final String id;
+    private String id;
     private String sessionId;
     private String cid;
     private String peb;
     private String image;
     private String parentCid;
     private List<Thread> threads;
+
+    public Process() {
+    }
+
+    public Process(String id, String sessionId, String cid, String peb, String image, String parentCid, List<Thread> threads) {
+        this.id = id;
+        this.sessionId = sessionId;
+        this.cid = cid;
+        this.peb = peb;
+        this.image = image;
+        this.parentCid = parentCid;
+        this.threads = threads;
+    }
 
     public Process(String id) {
         this.id = id;

@@ -3,10 +3,19 @@ package model.memory;
 public class Call {
 
     public static final int ARGS_COUNT = 4;
+    private static final boolean CASE_SENSITIVE = false;
+
     private String childSp;
     private String returnAddress;
     private String[] args;
     private String callSite;
+
+    public Call(String childSp, String returnAddress, String[] args, String callSite) {
+        this.childSp = childSp;
+        this.returnAddress = returnAddress;
+        this.args = args;
+        this.callSite = callSite;
+    }
 
     public Call() {
         args = new String[ARGS_COUNT];
@@ -65,11 +74,12 @@ public class Call {
         return getShortName();
     }
 
-    private String getShortName() {
+    public String getShortName() {
         try {
-            return callSite.substring(0, callSite.indexOf("+"));
+            String callSiteName = callSite.substring(0, callSite.indexOf("+"));
+            return CASE_SENSITIVE ? callSiteName : callSiteName.toLowerCase();
         } catch (Exception e) {
-            return callSite;
+            return CASE_SENSITIVE ? callSite : callSite.toLowerCase();
         }
     }
 }

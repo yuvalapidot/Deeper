@@ -7,6 +7,10 @@ public class CallStack {
 
     private List<Call> callList;
 
+    public CallStack(List<Call> callList) {
+        this.callList = callList;
+    }
+
     public CallStack() {
         callList = new ArrayList<>();
     }
