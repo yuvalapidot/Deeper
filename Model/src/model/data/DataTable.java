@@ -3,7 +3,7 @@ package model.data;
 import model.feature.Feature;
 import model.feature.FeatureKey;
 import model.feature.FeatureValue;
-import model.feature.Instance;
+import model.instance.Instance;
 
 import java.util.*;
 

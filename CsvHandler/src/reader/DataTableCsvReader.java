@@ -3,7 +3,7 @@ package reader;
 import model.data.DataTable;
 import model.feature.FeatureKey;
 import model.feature.FeatureValue;
-import model.feature.Instance;
+import model.instance.Instance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

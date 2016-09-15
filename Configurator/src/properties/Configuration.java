@@ -3,7 +3,6 @@ package properties;
 import exception.ConfigurationFileReadingException;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Properties;
 
 public class Configuration {
@@ -13,21 +12,11 @@ public class Configuration {
     private static final Object lock = new Object();
 
     private static void initialize() {
-        FileInputStream input = null;
-        try {
-            input = new FileInputStream(configFilePath);
+        try (FileInputStream input = new FileInputStream(configFilePath)) {
             properties = new Properties();
             properties.load(input);
         } catch (Exception ex) {
             throw new ConfigurationFileReadingException("Encountered a fatal problem while trying to read configuration file - " + configFilePath, ex);
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException ioe) {
-                    throw new ConfigurationFileReadingException("Encountered a fatal problem while trying to close configuration file - " + configFilePath, ioe);
-                }
-            }
         }
     }
 

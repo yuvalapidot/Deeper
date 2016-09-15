@@ -1,8 +1,5 @@
 package flag;
 
-/**
- * Created by yuval on 9/3/2016.
- */
 public class CrashDumpFileFlag implements IFlag {
 
     private static final String FLAG = "-z ";

@@ -1,4 +1,4 @@
-package model.feature;
+package model.instance;
 
 public class Instance {
 

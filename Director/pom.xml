@@ -26,21 +26,6 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>FeatureExtractor</groupId>
-            <artifactId>FeatureExtractor</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>FeatureExtractor</groupId>
-            <artifactId>FeatureExtractor</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>CommandExecutor</groupId>
-            <artifactId>WinDbgExecutor</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>CommandExecutor</groupId>
             <artifactId>WinDbgExecutor</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -58,6 +43,11 @@
         <dependency>
             <groupId>Model</groupId>
             <artifactId>Model</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>FileHandler</groupId>
+            <artifactId>CsvHandler</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

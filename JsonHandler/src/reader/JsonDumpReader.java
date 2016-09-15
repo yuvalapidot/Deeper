@@ -23,7 +23,7 @@ public class JsonDumpReader {
     public Dump jsonToDump(JsonToDumpRequest request) throws IOException {
         log.info("Trying to parse JSON: " + request.getJsonPath() + " into Dump");
         ObjectMapper mapper = new ObjectMapper();
-        Dump dump = null;
+        Dump dump;
         try {
             dump = mapper.readValue(request.getFile(), Dump.class);
         } catch (IOException e) {
@@ -41,7 +41,7 @@ public class JsonDumpReader {
      * @return List of dumps represented by the json files.
      */
     public List<Dump> jsonsToDumps(List<JsonToDumpRequest> requests) {
-        List<Dump> dumps = new ArrayList<Dump>();
+        List<Dump> dumps = new ArrayList<>();
         log.info("Trying to parse " + requests.size() + " JSONs into Dumps");
         for (JsonToDumpRequest request : requests) {
             try {

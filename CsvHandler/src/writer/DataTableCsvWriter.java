@@ -3,7 +3,7 @@ package writer;
 import model.data.DataTable;
 import model.feature.Feature;
 import model.feature.FeatureValue;
-import model.feature.Instance;
+import model.instance.Instance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,8 +18,6 @@ public class DataTableCsvWriter {
     private static final char CSV_DELIMITER = ',';
     private static final char CSV_NON_DELIMITER = '|';
     private static final char CSV_NEW_LINE = '\n';
-    private static final int CSV_CELL_MAX_LENGTH = 255;
-    private static final String[] NOT_ALLOWED_CSV_CHARACTERS = {"'"};
 
     private int tooLongCellNameCounter = 0;
 

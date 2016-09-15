@@ -1,5 +1,7 @@
 package model.feature;
 
+import model.instance.Instance;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ public class Feature <S> {
         return key;
     }
 
-    public void append(Feature feature) {
+    public void append(Feature<S> feature) {
         values.putAll(feature.values);
     }
 }

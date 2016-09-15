@@ -3,7 +3,7 @@ package extractor;
 import model.data.DataTable;
 import model.feature.CallGramFeatureKey;
 import model.feature.FeatureValue;
-import model.feature.Instance;
+import model.instance.Instance;
 import model.instance.DumpInstance;
 import model.memory.*;
 import model.memory.Process;

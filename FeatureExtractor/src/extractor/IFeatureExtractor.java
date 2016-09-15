@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface IFeatureExtractor<T> {
 
-    public void extract(DataTable table);
+    void extract(DataTable table);
 
-    public DataTable extract();
+    DataTable extract();
 
-    public void setInstances(List<T> instances);
+    void setInstances(List<T> instances);
 }
