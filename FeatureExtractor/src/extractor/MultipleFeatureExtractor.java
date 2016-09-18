@@ -1,11 +1,12 @@
 package extractor;
 
 import model.data.DataTable;
+import model.instance.Instance;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MultipleFeatureExtractor<T> extends AbstractFeatureExtractor<T> {
+public class MultipleFeatureExtractor<T extends Instance> extends AbstractFeatureExtractor<T> {
 
     private List<IFeatureExtractor<T>> extractors;
 

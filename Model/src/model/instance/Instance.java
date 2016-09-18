@@ -1,20 +1,31 @@
 package model.instance;
 
-public class Instance {
+public abstract class Instance<T> {
 
-    private final String name;
+    protected final T instance;
+    private InstanceSetType setType = InstanceSetType.COMBINED_SET;
 
-    public Instance(String name) {
-        this.name = name;
+    public Instance(T instance, InstanceSetType setType) {
+        this.instance = instance;
+        this.setType = setType;
     }
 
-    public String getName() {
-        return name;
+    public Instance(T instance) {
+        this.instance = instance;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public T getInstance() {
+        return instance;
+    }
+
+    public abstract String getName();
+
+    public InstanceSetType getSetType() {
+        return setType;
+    }
+
+    public void setSetType(InstanceSetType setType) {
+        this.setType = setType;
     }
 
     @Override
@@ -22,14 +33,17 @@ public class Instance {
         if (this == o) return true;
         if (!(o instanceof Instance)) return false;
 
-        Instance instance = (Instance) o;
+        Instance<?> instance1 = (Instance<?>) o;
 
-        return getName().equals(instance.getName());
+        if (!instance.equals(instance1.instance)) return false;
+        return setType == instance1.setType;
 
     }
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        int result = instance.hashCode();
+        result = 31 * result + setType.hashCode();
+        return result;
     }
 }

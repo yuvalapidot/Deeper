@@ -6,37 +6,36 @@ import model.data.DataTable;
 import model.feature.FeatureKey;
 import model.feature.FeatureValue;
 import model.instance.DumpInstance;
-import model.memory.Dump;
 
 import java.util.List;
 
 public class DumpToDataTableCreator extends DataTableCreator {
 
-    private List<Dump> dumps;
+    private List<DumpInstance> instances;
 
-    public DumpToDataTableCreator(List<Dump> dumps) {
+    public DumpToDataTableCreator(List<DumpInstance> instances) {
         super();
-        this.dumps = dumps;
+        this.instances = instances;
     }
 
-    public DumpToDataTableCreator(List<Dump> dumps, List<IFeatureExtractor<Dump>> extractors) {
+    public DumpToDataTableCreator(List<DumpInstance> instances, List<IFeatureExtractor<DumpInstance>> extractors) {
         super(extractors);
-        this.dumps = dumps;
+        this.instances = instances;
     }
 
     @Override
     public DataTable createDataTable() {
-        IFeatureExtractor<Dump> extractor = new MultipleFeatureExtractor<>(extractors);
-        extractor.setInstances(dumps);
+        IFeatureExtractor<DumpInstance> extractor = new MultipleFeatureExtractor<>(extractors);
+        extractor.setInstances(instances);
         DataTable table = extractor.extract();
-        addClassifications(table, dumps);
+        addClassifications(table, instances);
         return table;
     }
 
-    private void addClassifications(DataTable table, List<Dump> dumps) {
+    private void addClassifications(DataTable table, List<DumpInstance> instances) {
         FeatureKey<String, String> classFeatureKey = new FeatureKey<>("Class", "Unknown");
-        for (Dump dump : dumps) {
-            table.put(new DumpInstance(dump), classFeatureKey, new FeatureValue<>(dump.getClassification()));
+        for (DumpInstance instance : instances) {
+            table.put(instance, classFeatureKey, new FeatureValue<>(instance.getInstance().getClassification()));
         }
     }
 

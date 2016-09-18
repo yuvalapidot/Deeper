@@ -19,12 +19,10 @@ public class DataTableCsvWriter {
     private static final char CSV_NON_DELIMITER = '|';
     private static final char CSV_NEW_LINE = '\n';
 
-    private int tooLongCellNameCounter = 0;
-
     public void dataTableToCsv(DataTableToCsvRequest request) throws IOException {
         log.info("Trying to write Data Table into csv: " + request.getCsvPath());
         try (FileWriter writer = new FileWriter(request.getCsvPath())){
-            writer.write(dataTableToCsvString(request.getDataTable()));
+            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation()));
         } catch (IOException e) {
             log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
             throw e;
@@ -33,7 +31,7 @@ public class DataTableCsvWriter {
         request.notifyObservers();
     }
 
-    private String dataTableToCsvString(DataTable table) {
+    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation) {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
@@ -44,10 +42,10 @@ public class DataTableCsvWriter {
         }
         for (Instance instance : table.getInstances()) {
             builder.append(CSV_NEW_LINE);
-            builder.append(csvString(instance));
+            builder.append(csvString(instance.getName()));
             for (Feature feature : table.getFeatures()) {
                 builder.append(CSV_DELIMITER);
-                FeatureValue value = feature.getValue(instance);
+                FeatureValue value =  getValue(table, instance, feature, representation);
                 if (value.getValue() != null) {
                     builder.append(csvString(value));
                 }
@@ -56,14 +54,22 @@ public class DataTableCsvWriter {
         return builder.toString();
     }
 
+    private FeatureValue getValue(DataTable table, Instance instance, Feature feature, CsvNumberRepresentation representation) {
+        if (representation.equals(CsvNumberRepresentation.INTEGER_REPRESENTATION)) {
+            return feature.getValue(instance);
+        } else if (representation.equals(CsvNumberRepresentation.BINARY_REPRESENTATION)) {
+            return feature.getBinaryValue(instance);
+        } else if (representation.equals(CsvNumberRepresentation.TF_REPRESENTATION)) {
+            return table.getTimeFrequencyValue(instance, feature);
+        } else if (representation.equals(CsvNumberRepresentation.TFIDF_REPRESENTATION)) {
+            return table.getTimeFrequencyInverseDocumentFrequencyValue(instance, feature);
+        } else {
+            return feature.getValue(instance);
+        }
+    }
+
     private String csvString(Object o) {
         String csvString = o.toString().replace(CSV_DELIMITER, CSV_NON_DELIMITER);
-//        if (csvString.length() > CSV_CELL_MAX_LENGTH) {
-//            csvString = "TooLong" + tooLongCellNameCounter++;
-//        }
-//        for (String s : NOT_ALLOWED_CSV_CHARACTERS) {
-//            csvString.replace(s, "");
-//        }
         return "\"" + csvString + "\"";
     }
 }

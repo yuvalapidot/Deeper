@@ -8,10 +8,12 @@ public class DataTableToCsvRequest extends Observable {
 
     private DataTable dataTable;
     private String csvPath;
+    private CsvNumberRepresentation representation = CsvNumberRepresentation.INTEGER_REPRESENTATION;
 
-    public DataTableToCsvRequest(DataTable dataTable, String csvPath) {
+    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation) {
         this.dataTable = dataTable;
         this.csvPath = csvPath;
+        this.representation = representation;
     }
 
     public DataTable getDataTable() {
@@ -28,5 +30,13 @@ public class DataTableToCsvRequest extends Observable {
 
     public void setCsvPath(String csvPath) {
         this.csvPath = csvPath;
+    }
+
+    public CsvNumberRepresentation getRepresentation() {
+        return representation;
+    }
+
+    public void setRepresentation(CsvNumberRepresentation representation) {
+        this.representation = representation;
     }
 }

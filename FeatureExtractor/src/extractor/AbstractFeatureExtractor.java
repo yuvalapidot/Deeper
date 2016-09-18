@@ -1,8 +1,10 @@
 package extractor;
 
+import model.instance.Instance;
+
 import java.util.List;
 
-public abstract class AbstractFeatureExtractor<T> implements IFeatureExtractor<T> {
+public abstract class AbstractFeatureExtractor<T extends Instance> implements IFeatureExtractor<T> {
 
     protected List<T> instances;
 

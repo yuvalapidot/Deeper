@@ -3,8 +3,8 @@ package extractor;
 import model.data.DataTable;
 import model.feature.CallGramFeatureKey;
 import model.feature.FeatureValue;
-import model.instance.Instance;
 import model.instance.DumpInstance;
+import model.instance.InstanceSetType;
 import model.memory.*;
 import model.memory.Process;
 import model.memory.Thread;
@@ -12,7 +12,7 @@ import model.memory.Thread;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class CallGramExtractor extends AbstractFeatureExtractor<Dump> {
+public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
     private final int n;
 
@@ -29,11 +29,14 @@ public class CallGramExtractor extends AbstractFeatureExtractor<Dump> {
 
     @Override
     public void extract(DataTable table) {
-        for (Dump dump : instances) {
-            Map<CallGram, Integer> callGrams = getDumpCallGrams(dump);
-            Instance instance = new DumpInstance(dump);
+        for (DumpInstance instance : instances) {
+            Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
             for (CallGram callGram : callGrams.keySet()) {
-                table.put(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
+                if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
+                    table.putIfFeatureExists(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
+                } else {
+                    table.put(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
+                }
             }
         }
     }

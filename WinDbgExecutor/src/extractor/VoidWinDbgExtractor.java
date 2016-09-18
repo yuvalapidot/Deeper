@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
- * A simple extractor that always returns null but wait untill the output is finished.
+ * A simple extractor that always returns null but wait until the output is finished.
  */
 public class VoidWinDbgExtractor extends AbstractWinDbgExtractor {
 

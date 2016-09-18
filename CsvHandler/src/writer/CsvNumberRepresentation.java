@@ -1,0 +1,5 @@
+package writer;
+
+public enum CsvNumberRepresentation {
+    INTEGER_REPRESENTATION, BINARY_REPRESENTATION, TF_REPRESENTATION, TFIDF_REPRESENTATION
+}

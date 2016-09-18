@@ -11,6 +11,7 @@ import reader.JsonDumpReader;
 import reader.JsonToDumpRequest;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,25 +24,25 @@ public class DumpJsonsToDataTableCreator extends DataTableCreator {
         this.files = files;
     }
 
-    public DumpJsonsToDataTableCreator(List<File> files, List<IFeatureExtractor<Dump>> extractors) {
+    public DumpJsonsToDataTableCreator(List<File> files, List<IFeatureExtractor<DumpInstance>> extractors) {
         super(extractors);
         this.files = files;
     }
 
     @Override
     public DataTable createDataTable() {
-        IFeatureExtractor<Dump> extractor = new MultipleFeatureExtractor<>(extractors);
-        List<Dump> dumps = getDumps();
-        extractor.setInstances(dumps);
+        IFeatureExtractor<DumpInstance> extractor = new MultipleFeatureExtractor<>(extractors);
+        List<DumpInstance> instances = getDumpInstances(getDumps());
+        extractor.setInstances(instances);
         DataTable table = extractor.extract();
-        addClassifications(table, dumps);
+        addClassifications(table, instances);
         return table;
     }
 
-    private void addClassifications(DataTable table, List<Dump> dumps) {
+    private void addClassifications(DataTable table, List<DumpInstance> instances) {
         FeatureKey<String, String> classFeatureKey = new FeatureKey<>("Class", "Unknown");
-        for (Dump dump : dumps) {
-            table.put(new DumpInstance(dump), classFeatureKey, new FeatureValue<>(dump.getClassification()));
+        for (DumpInstance instance : instances) {
+            table.put(instance, classFeatureKey, new FeatureValue<>(instance.getInstance().getClassification()));
         }
     }
 
@@ -49,6 +50,15 @@ public class DumpJsonsToDataTableCreator extends DataTableCreator {
         JsonDumpReader reader = new JsonDumpReader();
         List<JsonToDumpRequest> requests = files.stream().map(file -> new JsonToDumpRequest(file)).collect(Collectors.toList());
         return reader.jsonsToDumps(requests);
+    }
+
+    private static List<DumpInstance> getDumpInstances(List<Dump> dumps) {
+        List<DumpInstance> instances = new ArrayList<>();
+        for (Dump dump : dumps) {
+            // TODO: adding set types to instances
+            instances.add(new DumpInstance(dump));
+        }
+        return instances;
     }
 
 }

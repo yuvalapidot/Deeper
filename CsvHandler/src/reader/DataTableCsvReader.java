@@ -4,6 +4,7 @@ import model.data.DataTable;
 import model.feature.FeatureKey;
 import model.feature.FeatureValue;
 import model.instance.Instance;
+import model.instance.StringInstance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +27,7 @@ public class DataTableCsvReader {
             String line = bufferedReader.readLine();
             String[] featureKeyNames = line.split(String.valueOf(CSV_DELIMITER));
             while ((line = bufferedReader.readLine()) != null) {
-                Instance instance = new Instance(featureKeyNames[0]);
+                Instance instance = new StringInstance(featureKeyNames[0]);
                 String[] instanceValueStrings = line.split(String.valueOf(CSV_DELIMITER));
                 for (int i = 1; i < Math.min(featureKeyNames.length, instanceValueStrings.length); i++) {
                     dataTable.put(instance, new FeatureKey<>(featureKeyNames[i]), new FeatureValue<>(instanceValueStrings[i]));

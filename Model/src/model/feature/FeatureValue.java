@@ -2,7 +2,7 @@ package model.feature;
 
 public class FeatureValue <T> {
 
-    private T value;
+    protected final T value;
 
     public FeatureValue(T value) {
         this.value = value;
@@ -10,10 +10,6 @@ public class FeatureValue <T> {
 
     public T getValue() {
         return value;
-    }
-
-    public void setValue(T value) {
-        this.value = value;
     }
 
     @Override

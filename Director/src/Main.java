@@ -3,9 +3,11 @@ import creator.DumpToDataTableCreator;
 import extractor.CallGramExtractor;
 import extractor.IFeatureExtractor;
 import model.data.DataTable;
+import model.instance.DumpInstance;
 import model.memory.Dump;
 import reader.JsonDumpReader;
 import reader.JsonToDumpRequest;
+import writer.CsvNumberRepresentation;
 import writer.DataTableCsvWriter;
 import writer.DataTableToCsvRequest;
 
@@ -25,21 +27,26 @@ public class Main {
     private static final String csvName = "-call-gram-data-table.csv";
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        List<IFeatureExtractor<Dump>> extractors = new ArrayList<>();
-        List<Dump> dumps = getDumps(getJsonFiles());
+        List<IFeatureExtractor<DumpInstance>> extractors = new ArrayList<>();
+        List<DumpInstance> dumps = getDumpInstances(getDumps(getJsonFiles()));
+        DataTableCsvWriter writer = new DataTableCsvWriter();
         for (int i = 1; i <= upToN; i++) {
-            IFeatureExtractor<Dump> extractor = new CallGramExtractor(i);
+            IFeatureExtractor<DumpInstance> extractor = new CallGramExtractor(i);
             DataTableCreator creator = new DumpToDataTableCreator(dumps);
             creator.addExtractor(extractor);
             DataTable table = creator.createDataTable();
-            DataTableCsvWriter writer = new DataTableCsvWriter();
-            writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + i + csvName));
+            writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "Regular\\" + i + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION));
+            writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "Binary\\" + i + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION));
+            writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "TF\\" + i + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION));
+            writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "TF-IDF\\" + i + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION));
             extractors.add(extractor);
         }
         DataTableCreator creator = new DumpToDataTableCreator(dumps, extractors);
         DataTable table = creator.createDataTable();
-        DataTableCsvWriter writer = new DataTableCsvWriter();
-        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "combined-1-" + upToN + csvName));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "Regular\\combined-1-regular-" + upToN + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "Binary\\combined-1-binary-" + upToN + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "TF\\combined-1-tf-" + upToN + csvName, CsvNumberRepresentation.TF_REPRESENTATION));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + "TF-IDF\\combined-1-tf-idf-" + upToN + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION));
     }
 
     private static List<File> getJsonFiles() throws IOException {
@@ -52,5 +59,13 @@ public class Main {
         JsonDumpReader reader = new JsonDumpReader();
         List<JsonToDumpRequest> requests = files.stream().map(file -> new JsonToDumpRequest(file)).collect(Collectors.toList());
         return reader.jsonsToDumps(requests);
+    }
+
+    private static List<DumpInstance> getDumpInstances(List<Dump> dumps) {
+        List<DumpInstance> instances = new ArrayList<>();
+        for (Dump dump : dumps) {
+            instances.add(new DumpInstance(dump));
+        }
+        return instances;
     }
 }
