@@ -31,6 +31,7 @@ public class JsonDumpReader {
             throw e;
         }
         log.info("Finished parsing JSON: " + request.getJsonPath() + " into Dump");
+        dump.setName(request.getJsonPath());
         request.notifyObservers(dump);
         return dump;
     }

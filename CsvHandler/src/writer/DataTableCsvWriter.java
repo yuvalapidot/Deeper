@@ -4,11 +4,13 @@ import model.data.DataTable;
 import model.feature.Feature;
 import model.feature.FeatureValue;
 import model.instance.Instance;
+import model.instance.InstanceSetType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Set;
 
 public class DataTableCsvWriter {
 
@@ -22,7 +24,7 @@ public class DataTableCsvWriter {
     public void dataTableToCsv(DataTableToCsvRequest request) throws IOException {
         log.info("Trying to write Data Table into csv: " + request.getCsvPath());
         try (FileWriter writer = new FileWriter(request.getCsvPath())){
-            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation()));
+            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter()));
         } catch (IOException e) {
             log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
             throw e;
@@ -31,19 +33,24 @@ public class DataTableCsvWriter {
         request.notifyObservers();
     }
 
-    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation) {
+    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypesFilter) {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
         StringBuilder builder = new StringBuilder(INSTANCES);
-        for (Feature feature : table.getFeatures()) {
+        Set<Feature> features = table.getFeatures();
+
+        for (Feature feature : features) {
             builder.append(CSV_DELIMITER);
             builder.append(csvString(feature.getKey()));
         }
         for (Instance instance : table.getInstances()) {
+            if (!instanceSetTypesFilter.contains(instance.getSetType())) {
+                continue;
+            }
             builder.append(CSV_NEW_LINE);
             builder.append(csvString(instance.getName()));
-            for (Feature feature : table.getFeatures()) {
+            for (Feature feature : features) {
                 builder.append(CSV_DELIMITER);
                 FeatureValue value =  getValue(table, instance, feature, representation);
                 if (value.getValue() != null) {

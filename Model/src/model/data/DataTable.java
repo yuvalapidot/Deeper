@@ -16,11 +16,14 @@ public class DataTable {
     private final Map<FeatureKey, Feature> featureMap;
     private final Map<Instance, Integer> maxValues;
 
+    private Map<Feature, Double> inverseDocumentFrequencies;
+
     public DataTable() {
         instances = new LinkedHashSet<>();
         features = new LinkedHashSet<>();
         featureMap = new LinkedHashMap<>();
         maxValues = new HashMap<>();
+        inverseDocumentFrequencies = new HashMap<>();
     }
 
     public <S> void put(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
@@ -33,6 +36,7 @@ public class DataTable {
                 maxValues.put(instance, value);
             }
         }
+        inverseDocumentFrequencies = new HashMap<>();
     }
 
     public <S> void putIfFeatureExists(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
@@ -61,18 +65,18 @@ public class DataTable {
         return feature;
     }
 
-    public void append(DataTable table) {
-        this.instances.addAll(table.instances);
-        for (Feature newFeature : features) {
-            Feature feature;
-            if ((feature = featureMap.get(newFeature.getKey())) != null) {
-                feature.append(newFeature);
-            } else {
-                features.add(newFeature);
-                featureMap.put(newFeature.getKey(), newFeature);
-            }
-        }
-    }
+//    public void append(DataTable table) {
+//        this.instances.addAll(table.instances);
+//        for (Feature newFeature : features) {
+//            Feature feature;
+//            if ((feature = featureMap.get(newFeature.getKey())) != null) {
+//                feature.append(newFeature);
+//            } else {
+//                features.add(newFeature);
+//                featureMap.put(newFeature.getKey(), newFeature);
+//            }
+//        }
+//    }
 
     public FeatureValue getTimeFrequencyValue(Instance instance, Feature feature) {
         FeatureValue value = feature.getValue(instance);
@@ -101,6 +105,10 @@ public class DataTable {
     }
 
     private double getInverseDocumentFrequency(Feature feature) {
+        Double idf = inverseDocumentFrequencies.get(feature);
+        if (idf != null) {
+            return idf;
+        }
         int countTrainDocuments = 0;
         int countTrainDocumentWithFeature = 0;
         for (Instance instance : instances) {
@@ -111,6 +119,8 @@ public class DataTable {
                 }
             }
         }
-        return Math.log(((double)countTrainDocuments) / countTrainDocumentWithFeature) / Math.log(2);
+        idf = Math.log(((double)countTrainDocuments) / countTrainDocumentWithFeature) / Math.log(2);
+        inverseDocumentFrequencies.put(feature, idf);
+        return idf;
     }
 }
