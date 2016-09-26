@@ -22,9 +22,14 @@ import java.util.stream.Collectors;
 public class Main {
 
     private static final int upToN = 5;
-    private static final String jsonsDirectoryPath = "D:\\DeepFeaturesExperiment\\Jsons";
-    private static final String csvPath = "D:\\DeepFeaturesExperiment\\Results\\";
+    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Documents\\Thesis\\Feature Extraction\\Jsons";
+    private static final String csvPath = "C:\\Users\\yuval\\Documents\\Thesis\\Feature Extraction\\Results\\";
     private static final String csvName = "-call-gram-data-table.csv";
+
+    private static final int DS1_COUNT = 100;
+    private static final int DS2_COUNT = 446;
+    private static final int DS3_COUNT = 100;
+    private static final int DS4_COUNT = 93;
 
     private static final Set<InstanceSetType> TRAIN = new HashSet<InstanceSetType>(Arrays.asList(InstanceSetType.TRAIN_SET));
     private static final Set<InstanceSetType> TEST = new HashSet<InstanceSetType>(Arrays.asList(InstanceSetType.TEST_SET));
@@ -85,23 +90,29 @@ public class Main {
     private static List<DumpInstance> getDumpInstances(List<Dump> dumps) {
         List<DumpInstance> instances = new ArrayList<>();
         Random random = new Random(0);
+        int ds1Count = 0, ds2Count = 0, ds3Count = 0, ds4Count = 0;
         for (Dump dump : dumps) {
             if (dump.getName().contains("Empty")) {
                 // DS1
+                ds1Count++;
+                continue;
 //                dump.setClassification("DS1");
-                instances.add(new DumpInstance(dump, (random.nextDouble() > 0.7) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+//                instances.add(new DumpInstance(dump, InstanceSetType.TRAIN_SET));
             } else if (dump.getName().contains("ProcMon")) {
                 // DS3
-//                dump.setClassification("DS3");
-                instances.add(new DumpInstance(dump, (random.nextDouble() > 0.7) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+                ds3Count++;
+                dump.setClassification("BENIGN");
+                instances.add(new DumpInstance(dump, (ds3Count <= DS3_COUNT / 2) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
             } else if (dump.getName().contains("Cerber")) {
                 // DS4
-//                dump.setClassification("DS4");
-                instances.add(new DumpInstance(dump, InstanceSetType.TEST_SET));
+                ds4Count++;
+                dump.setClassification("MALICIOUS");
+                instances.add(new DumpInstance(dump, (ds2Count <= DS2_COUNT / 2) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
             } else if (dump.getName().contains("HiddenTear")) {
                 // DS2
-//                dump.setClassification("DS2");
-                instances.add(new DumpInstance(dump, (random.nextDouble() > 0.7) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+                ds2Count++;
+                dump.setClassification("MALICIOUS");
+                instances.add(new DumpInstance(dump, InstanceSetType.TEST_SET));
             }
         }
         return instances;

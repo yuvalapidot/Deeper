@@ -37,25 +37,38 @@ public class DataTableCsvWriter {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
-        StringBuilder builder = new StringBuilder(INSTANCES);
+//        StringBuilder builder = new StringBuilder(INSTANCES);
+        StringBuilder builder = new StringBuilder();
         Set<Feature> features = table.getFeatures();
-
+        boolean addSeparator = false;
         for (Feature feature : features) {
-            builder.append(CSV_DELIMITER);
+            if (addSeparator) {
+                builder.append(CSV_DELIMITER);
+            } else {
+                addSeparator = true;
+            }
             builder.append(csvString(feature.getKey()));
         }
-        for (Instance instance : table.getInstances()) {
-            if (!instanceSetTypesFilter.contains(instance.getSetType())) {
-                continue;
-            }
-            builder.append(CSV_NEW_LINE);
-            builder.append(csvString(instance.getName()));
-            for (Feature feature : features) {
-                builder.append(CSV_DELIMITER);
-                FeatureValue value =  getValue(table, instance, feature, representation);
-                if (value.getValue() != null) {
-                    builder.append(csvString(value));
+        for (InstanceSetType type : instanceSetTypesFilter) {
+            for (Instance instance : table.getInstances()) {
+                if (instance.getSetType() != type) {
+                    continue;
                 }
+                builder.append(CSV_NEW_LINE);
+//            builder.append(csvString(instance.getName()));
+                addSeparator = false;
+                for (Feature feature : features) {
+                    if (addSeparator) {
+                        builder.append(CSV_DELIMITER);
+                    } else {
+                        addSeparator = true;
+                    }
+                    FeatureValue value =  getValue(table, instance, feature, representation);
+                    if (value.getValue() != null) {
+                        builder.append(csvString(value));
+                    }
+                }
+//                builder.append("," + csvString(type.toString()));
             }
         }
         return builder.toString();

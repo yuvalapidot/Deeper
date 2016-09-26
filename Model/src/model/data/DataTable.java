@@ -12,6 +12,8 @@ import java.util.*;
 public class DataTable {
 
     private final Set<Instance> instances;
+    private final Set<Instance> trainInstances;
+    private final Set<Instance> testInstances;
     private final Set<Feature> features;
     private final Map<FeatureKey, Feature> featureMap;
     private final Map<Instance, Integer> maxValues;
@@ -24,10 +26,12 @@ public class DataTable {
         featureMap = new LinkedHashMap<>();
         maxValues = new HashMap<>();
         inverseDocumentFrequencies = new HashMap<>();
+        trainInstances = new HashSet<>();
+        testInstances = new HashSet<>();
     }
 
     public <S> void put(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
-        instances.add(instance);
+        addInstance(instance);
         getFeature(featureKey).setValue(instance, featureValue);
         if (featureValue.getValue() instanceof Integer) {
             Integer value = (Integer) featureValue.getValue();
@@ -43,7 +47,16 @@ public class DataTable {
         if (featureMap.containsKey(featureKey)) {
             put(instance, featureKey, featureValue);
         } else {
-            instances.add(instance);
+            addInstance(instance);
+        }
+    }
+
+    private void addInstance(Instance instance) {
+        instances.add(instance);
+        if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
+            trainInstances.add(instance);
+        } else {
+            testInstances.add(instance);
         }
     }
 
@@ -109,17 +122,13 @@ public class DataTable {
         if (idf != null) {
             return idf;
         }
-        int countTrainDocuments = 0;
         int countTrainDocumentWithFeature = 0;
-        for (Instance instance : instances) {
-            if (!instance.getSetType().equals(InstanceSetType.TEST_SET)) {
-                countTrainDocuments++;
-                if (feature.getBinaryValue(instance).equals(BinaryFeatureValue.TRUE_VALUE)) {
-                    countTrainDocumentWithFeature++;
-                }
+        for (Instance instance : trainInstances) {
+            if (feature.getBinaryValue(instance).equals(BinaryFeatureValue.TRUE_VALUE)) {
+                countTrainDocumentWithFeature++;
             }
         }
-        idf = Math.log(((double)countTrainDocuments) / countTrainDocumentWithFeature) / Math.log(2);
+        idf = Math.log(((double) trainInstances.size()) / countTrainDocumentWithFeature) / Math.log(2);
         inverseDocumentFrequencies.put(feature, idf);
         return idf;
     }

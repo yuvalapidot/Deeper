@@ -3,7 +3,7 @@ package model.instance;
 public abstract class Instance<T> {
 
     protected final T instance;
-    private InstanceSetType setType = InstanceSetType.COMBINED_SET;
+    private InstanceSetType setType = InstanceSetType.TRAIN_SET;
 
     public Instance(T instance, InstanceSetType setType) {
         this.instance = instance;
