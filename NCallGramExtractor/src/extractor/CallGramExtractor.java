@@ -30,12 +30,18 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
     @Override
     public void extract(DataTable table) {
         for (DumpInstance instance : instances) {
-            Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
-            for (CallGram callGram : callGrams.keySet()) {
-                if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
-                    table.putIfFeatureExists(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
-                } else {
+            if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
+                Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
+                for (CallGram callGram : callGrams.keySet()) {
                     table.put(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
+                }
+            }
+        }
+        for (DumpInstance instance : instances) {
+            if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
+                Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
+                for (CallGram callGram : callGrams.keySet()) {
+                    table.putIfFeatureExists(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
                 }
             }
         }

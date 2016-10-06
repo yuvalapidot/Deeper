@@ -1,5 +1,8 @@
 package model.memory;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Call {
 
     public static final int ARGS_COUNT = 4;

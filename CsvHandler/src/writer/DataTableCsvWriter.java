@@ -8,6 +8,7 @@ import model.instance.InstanceSetType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Set;
@@ -23,7 +24,9 @@ public class DataTableCsvWriter {
 
     public void dataTableToCsv(DataTableToCsvRequest request) throws IOException {
         log.info("Trying to write Data Table into csv: " + request.getCsvPath());
-        try (FileWriter writer = new FileWriter(request.getCsvPath())){
+        File csv = new File(request.getCsvPath());
+        csv.getParentFile().mkdirs();
+        try (FileWriter writer = new FileWriter(csv)){
             writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter()));
         } catch (IOException e) {
             log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
@@ -37,7 +40,7 @@ public class DataTableCsvWriter {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
-//        StringBuilder builder = new StringBuilder(INSTANCES);
+//        StringBuilder builder = new StringBuilder(INSTANCES + CSV_DELIMITER);
         StringBuilder builder = new StringBuilder();
         Set<Feature> features = table.getFeatures();
         boolean addSeparator = false;
@@ -55,7 +58,7 @@ public class DataTableCsvWriter {
                     continue;
                 }
                 builder.append(CSV_NEW_LINE);
-//            builder.append(csvString(instance.getName()));
+//                builder.append(csvString(instance.getName()) + CSV_DELIMITER);
                 addSeparator = false;
                 for (Feature feature : features) {
                     if (addSeparator) {
@@ -68,7 +71,6 @@ public class DataTableCsvWriter {
                         builder.append(csvString(value));
                     }
                 }
-//                builder.append("," + csvString(type.toString()));
             }
         }
         return builder.toString();
