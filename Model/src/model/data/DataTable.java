@@ -32,7 +32,7 @@ public class DataTable {
 
     public <S> void put(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
         addInstance(instance);
-        getFeature(featureKey).setValue(instance, featureValue);
+        getCreateFeature(featureKey).setValue(instance, featureValue);
         if (featureValue.getValue() instanceof Integer) {
             Integer value = (Integer) featureValue.getValue();
             Integer maxValue = maxValues.get(instance);
@@ -43,11 +43,13 @@ public class DataTable {
         inverseDocumentFrequencies = new HashMap<>();
     }
 
-    public <S> void putIfFeatureExists(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
+    public <S> boolean putIfFeatureExists(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
         if (featureMap.containsKey(featureKey)) {
             put(instance, featureKey, featureValue);
+            return true;
         } else {
             addInstance(instance);
+            return false;
         }
     }
 
@@ -60,6 +62,10 @@ public class DataTable {
         }
     }
 
+    public Feature getFeature(FeatureKey key) {
+        return featureMap.get(key);
+    }
+
     public Set<Instance> getInstances() {
         return instances;
     }
@@ -68,7 +74,7 @@ public class DataTable {
         return features;
     }
 
-    private Feature getFeature(FeatureKey key) {
+    private Feature getCreateFeature(FeatureKey key) {
         Feature feature = featureMap.get(key);
         if (feature == null) {
             feature = new Feature(key);

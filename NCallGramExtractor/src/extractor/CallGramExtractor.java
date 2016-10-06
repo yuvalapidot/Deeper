@@ -2,6 +2,8 @@ package extractor;
 
 import model.data.DataTable;
 import model.feature.CallGramFeatureKey;
+import model.feature.Feature;
+import model.feature.FeatureKey;
 import model.feature.FeatureValue;
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
@@ -15,6 +17,8 @@ import java.util.Map;
 public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
     private final int n;
+    private boolean trainDiffFeature = true;
+    private boolean trainBenignDiffFeature = false;
 
     public CallGramExtractor(int n) {
         this.n = n;
@@ -38,11 +42,32 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
             }
         }
         for (DumpInstance instance : instances) {
+            int instanceUniqueCounter = 0;
+            int instanceBenignUniqueCounter = 0;
+            FeatureKey<String, Integer> instanceUniqueFeatureKey = new FeatureKey<String, Integer>(n + "GramTrainUnique");
+            FeatureKey<String, Integer> instanceBenignUniqueFeatureKey = new FeatureKey<String, Integer>(n + "GramTrainBenignUnique");
+            if (instance.getSetType().equals(InstanceSetType.TRAIN_SET) && (trainDiffFeature | trainBenignDiffFeature)) {
+                Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
+                for (CallGram callGram : callGrams.keySet()) {
+                    Feature feature = table.getFeature(new CallGramFeatureKey(callGram, 0));
+                    if (trainDiffFeature && feature.size() == 1) {
+                        instanceUniqueCounter++;
+                    }
+                }
+            }
             if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
                 Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
                 for (CallGram callGram : callGrams.keySet()) {
-                    table.putIfFeatureExists(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
+                    if (!table.putIfFeatureExists(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)))) {
+                        instanceUniqueCounter++;
+                    }
                 }
+            }
+            if (trainDiffFeature) {
+                table.put(instance, instanceUniqueFeatureKey, new FeatureValue<>(instanceUniqueCounter));
+            }
+            if (trainBenignDiffFeature) {
+                table.put(instance, instanceBenignUniqueFeatureKey, new FeatureValue<>(instanceBenignUniqueCounter));
             }
         }
     }
