@@ -6,6 +6,8 @@ import model.data.DataTable;
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
 import model.memory.Dump;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reader.JsonDumpReader;
 import reader.JsonToDumpRequest;
 import writer.CsvNumberRepresentation;
@@ -20,6 +22,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
+
+    private static final Logger log = LogManager.getLogger(Main.class);
 
     private static final int upToN = 4;
     private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\University\\Thesis\\Results\\Feature Extraction\\Deep Features\\Jsons";
@@ -40,9 +44,16 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         DataTableCsvWriter writer = new DataTableCsvWriter();
         List<Dump> dumps = getDumps(getJsonFiles());
-        for (int i = 0; i <= 7; i++) {
+        for (int i = 4; i <= 7; i++) {
             List<IFeatureExtractor<DumpInstance>> extractors = new ArrayList<>();
             List<DumpInstance> dumpInstances = getDumpInstances(i, dumps);
+            int trainCounter = 0;
+            for (DumpInstance instance : dumpInstances) {
+                if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
+                    trainCounter++;
+                }
+            }
+            log.info("Experiment " + i + " train percentage: " + (((double) trainCounter) / dumpInstances.size()) * 100);
             for (int j = 1; j <= upToN; j++) {
                 IFeatureExtractor<DumpInstance> extractor = new CallGramExtractor(j);
                 DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
