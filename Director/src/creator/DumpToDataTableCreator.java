@@ -35,7 +35,7 @@ public class DumpToDataTableCreator extends DataTableCreator {
     private void addClassifications(DataTable table, List<DumpInstance> instances) {
         FeatureKey<String, String> classFeatureKey = new FeatureKey<>("Class", "Unknown");
         for (DumpInstance instance : instances) {
-            table.put(instance, classFeatureKey, new FeatureValue<>(instance.getInstance().getClassification()));
+            table.put(instance, classFeatureKey, new FeatureValue<>(instance.getClassification()));
         }
     }
 

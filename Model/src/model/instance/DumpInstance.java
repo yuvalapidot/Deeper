@@ -4,6 +4,10 @@ import model.memory.Dump;
 
 public class DumpInstance extends Instance<Dump> {
 
+    public DumpInstance(Dump instance, InstanceSetType setType, String classification) {
+        super(instance, setType, classification);
+    }
+
     public DumpInstance(Dump instance, InstanceSetType setType) {
         super(instance, setType);
     }

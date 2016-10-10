@@ -4,6 +4,13 @@ public abstract class Instance<T> {
 
     protected final T instance;
     private InstanceSetType setType = InstanceSetType.TRAIN_SET;
+    private String classification = "Unknown";
+
+    public Instance(T instance, InstanceSetType setType, String classification) {
+        this.instance = instance;
+        this.setType = setType;
+        this.classification = classification;
+    }
 
     public Instance(T instance, InstanceSetType setType) {
         this.instance = instance;
@@ -16,6 +23,14 @@ public abstract class Instance<T> {
 
     public T getInstance() {
         return instance;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
     }
 
     public abstract String getName();

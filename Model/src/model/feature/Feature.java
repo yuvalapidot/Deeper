@@ -2,7 +2,9 @@ package model.feature;
 
 import model.instance.Instance;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Feature <S> {
@@ -28,6 +30,16 @@ public class Feature <S> {
             return (values.containsKey(instance)) ? BinaryFeatureValue.TRUE_VALUE : BinaryFeatureValue.FALSE_VALUE;
         }
         return getValue(instance);
+    }
+
+    public List<Instance> getInstancesOfClassification(String classification) {
+        List<Instance> instances = new ArrayList<>();
+        for (Instance instance : values.keySet()) {
+            if (instance.getClassification().equals(classification)) {
+                instances.add(instance);
+            }
+        }
+        return instances;
     }
 
     public void setValue(Instance instance, FeatureValue<S> value) {

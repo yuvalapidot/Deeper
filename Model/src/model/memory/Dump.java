@@ -1,10 +1,13 @@
 package model.memory;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.lang.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Dump {
 
     private List<Process> processes;
