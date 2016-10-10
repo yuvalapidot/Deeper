@@ -44,7 +44,7 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         DataTableCsvWriter writer = new DataTableCsvWriter();
         List<Dump> dumps = getDumps(getJsonFiles());
-        for (int i = 4; i <= 7; i++) {
+        for (int i = 8; i <= 8; i++) {
             List<IFeatureExtractor<DumpInstance>> extractors = new ArrayList<>();
             List<DumpInstance> dumpInstances = getDumpInstances(i, dumps);
             int trainCounter = 0;
@@ -112,6 +112,7 @@ public class Main {
             case 5: return getDumpInstancesExperiment5(dumps);
             case 6: return getDumpInstancesExperiment6(dumps);
             case 7: return getDumpInstancesExperiment7(dumps);
+            case 8: return getDumpInstancesExperiment8(dumps);
         }
         return new ArrayList<>();
     }
@@ -418,6 +419,45 @@ public class Main {
                 ds5Count++;
                 dump.setClassification("MALICIOUS");
                 instances.add(new DumpInstance(dump, (ds5Count <= DS5_COUNT / 1.5) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+            } else if (dump.getName().contains("Vipasana")) {
+                // DS6
+                ds6Count++;
+                dump.setClassification("MALICIOUS");
+                instances.add(new DumpInstance(dump, InstanceSetType.TEST_SET));
+            }
+        }
+        return instances;
+    }
+
+    private static List<DumpInstance> getDumpInstancesExperiment8(List<Dump> dumps) {
+        List<DumpInstance> instances = new ArrayList<>();
+        int ds1Count = 0, ds2Count = 0, ds3Count = 0, ds4Count = 0, ds5Count = 0, ds6Count = 0;
+        for (Dump dump : dumps) {
+            if (dump.getName().contains("Empty")) {
+                // DS1
+                ds1Count++;
+                dump.setClassification("BENIGN");
+                instances.add(new DumpInstance(dump, (ds1Count <= DS1_COUNT / 1.5) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+            } else if (dump.getName().contains("ProcMon")) {
+                // DS3
+                ds3Count++;
+                dump.setClassification("BENIGN");
+                instances.add(new DumpInstance(dump, (ds3Count <= DS3_COUNT / 1.5) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+            } else if (dump.getName().contains("Cerber")) {
+                // DS4
+                ds4Count++;
+                dump.setClassification("MALICIOUS");
+                instances.add(new DumpInstance(dump, (ds4Count <= DS4_COUNT / 1) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+            } else if (dump.getName().contains("HiddenTear")) {
+                // DS2
+                ds2Count++;
+                dump.setClassification("MALICIOUS");
+                instances.add(new DumpInstance(dump, (ds2Count <= DS2_COUNT / 1) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
+            } else if (dump.getName().contains("CryptoLocker3")) {
+                // DS5
+                ds5Count++;
+                dump.setClassification("MALICIOUS");
+                instances.add(new DumpInstance(dump, (ds5Count <= DS5_COUNT / 1) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET));
             } else if (dump.getName().contains("Vipasana")) {
                 // DS6
                 ds6Count++;
