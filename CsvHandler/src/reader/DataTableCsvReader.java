@@ -26,10 +26,12 @@ public class DataTableCsvReader {
              BufferedReader bufferedReader = new BufferedReader(reader)) {
             String line = bufferedReader.readLine();
             String[] featureKeyNames = line.split(String.valueOf(CSV_DELIMITER));
+            int instanceCount = 0;
             while ((line = bufferedReader.readLine()) != null) {
-                Instance instance = new StringInstance(featureKeyNames[0]);
+                instanceCount++;
                 String[] instanceValueStrings = line.split(String.valueOf(CSV_DELIMITER));
-                for (int i = 1; i < Math.min(featureKeyNames.length, instanceValueStrings.length); i++) {
+                Instance instance = new StringInstance(request.isNamesOnFirstColumn() ? instanceValueStrings[0] : "Instance " + instanceCount);
+                for (int i = request.isNamesOnFirstColumn() ? 1 : 0; i < Math.min(featureKeyNames.length, instanceValueStrings.length); i++) {
                     dataTable.put(instance, new FeatureKey<>(featureKeyNames[i]), new FeatureValue<>(instanceValueStrings[i]));
                 }
             }

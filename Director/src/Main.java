@@ -2,6 +2,7 @@ import creator.DataTableCreator;
 import creator.DumpToDataTableCreator;
 import extractor.CallGramExtractor;
 import extractor.IFeatureExtractor;
+import model.DataSet;
 import model.data.DataTable;
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
@@ -26,152 +27,105 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
 
     private static final int upToN = 4;
-    private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
-    private static final String csvPath = "D:\\Dropbox\\NGrams\\Results\\Experiment";
+    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Jsons";
+    private static final String csvPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results\\Experiment";
     private static final String csvName = "-call-gram-data-table.csv";
 
-    private static final int DS1_COUNT = 100;
-    private static final int DS2_COUNT = 100;
-    private static final int DS3_COUNT = 100;
-    private static final int DS4_COUNT = 93;
-    private static final int DS5_COUNT = 100;
-    private static final int DS6_COUNT = 97;
+    private static final DataSet DSB1 = new DataSet("Baseline", "dsB1", 100);
+    private static final DataSet DSB2 = new DataSet("Procmon", "dsB2", 100);
+    private static final DataSet DSB3 = new DataSet("Avast", "dsB3", 100);
+    private static final DataSet DSB4 = new DataSet("Wireshark", "dsB4", 100);
+    private static final DataSet DSB5 = new DataSet("Defrag", "dsB5", 100);
+    private static final DataSet DSM3 = new DataSet("CryptoLocker3", "dsM3", 100);
+    private static final DataSet DSM4 = new DataSet("Vipasana", "dsM4", 100);
+
+    private static final int TRAIN_TEST_SPLIT_PERCENTAGE = 50;
 
     private static final DumpInstanceCreator[][] creators = {
             // EXPERIMENT 1
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", DS1_COUNT, 100),
-                    new DumpInstanceCreator("HiddenTear", "ANOMALY", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "ANOMALY", DS3_COUNT, 100),
-                    new DumpInstanceCreator("Cerber", "ANOMALY", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "ANOMALY", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "ANOMALY", DS6_COUNT, 100),
+                    new DumpInstanceCreator(DSB1.getName(), "BENIGN", DSB1.getCount(), 100),
+                    new DumpInstanceCreator(DSB2.getName(), "ANOMALY", DSB2.getCount(), 100),
+                    new DumpInstanceCreator(DSB3.getName(), "ANOMALY", DSB3.getCount(), 100),
+                    new DumpInstanceCreator(DSB4.getName(), "ANOMALY", DSB4.getCount(), 100),
+                    new DumpInstanceCreator(DSB5.getName(), "ANOMALY", DSB5.getCount(), 100),
+                    new DumpInstanceCreator(DSM3.getName(), "ANOMALY", DSM3.getCount(), 100),
+                    new DumpInstanceCreator(DSM4.getName(), "ANOMALY", DSM4.getCount(), 100),
             },
             // EXPERIMENT 2
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 100),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 100),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), 100),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), 100),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), 100),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), 100),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), 100),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), 100),
             },
             // EXPERIMENT 3
             {
-                    new DumpInstanceCreator("Empty", "DS1", DS1_COUNT, 100),
-                    new DumpInstanceCreator("HiddenTear", "DS2", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "DS3", DS3_COUNT, 100),
-                    new DumpInstanceCreator("Cerber", "DS4", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "DS5", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "DS6", DS6_COUNT, 100),
+                    new DumpInstanceCreator(DSB1.getName(), DSB1.getSymbol(), DSB1.getCount(), 100),
+                    new DumpInstanceCreator(DSB2.getName(), DSB2.getSymbol(), DSB2.getCount(), 100),
+                    new DumpInstanceCreator(DSB3.getName(), DSB3.getSymbol(), DSB3.getCount(), 100),
+                    new DumpInstanceCreator(DSB4.getName(), DSB4.getSymbol(), DSB4.getCount(), 100),
+                    new DumpInstanceCreator(DSB5.getName(), DSB5.getSymbol(), DSB5.getCount(), 100),
+                    new DumpInstanceCreator(DSM3.getName(), DSM3.getSymbol(), DSM3.getCount(), 100),
+                    new DumpInstanceCreator(DSM4.getName(), DSM4.getSymbol(), DSM4.getCount(), 100),
             },
             // EXPERIMENT 4.1
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 0),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 50),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 50),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 50),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), 0),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
             },
             // EXPERIMENT 5.1
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 50),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 0),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 50),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 50),
-            },
-            // EXPERIMENT 6.1
-            {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 50),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 50),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 0),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 50),
-            },
-            // EXPERIMENT 7.1
-            {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 50),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 50),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 50),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 0),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), 0),
             },
             // EXPERIMENT 4.2
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 0),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), 0),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), 100),
             },
             // EXPERIMENT 5.2
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 0),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
-            },
-            // EXPERIMENT 6.2
-            {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 0),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
-            },
-            // EXPERIMENT 7.2
-            {
-                    new DumpInstanceCreator("Empty", "BENIGN", 0, 0),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 0),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), 100),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), 0),
             },
             // EXPERIMENT 4.3
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", DS1_COUNT, 50),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 0),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
+                    new DumpInstanceCreator(DSB1.getName(), "BENIGN", DSB1.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), 0),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), 100),
             },
             // EXPERIMENT 5.3
             {
-                    new DumpInstanceCreator("Empty", "BENIGN", DS1_COUNT, 50),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 0),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
-            },
-            // EXPERIMENT 6.3
-            {
-                    new DumpInstanceCreator("Empty", "BENIGN", DS1_COUNT, 50),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 0),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 100),
-            },
-            // EXPERIMENT 7.3
-            {
-                    new DumpInstanceCreator("Empty", "BENIGN", DS1_COUNT, 50),
-                    new DumpInstanceCreator("HiddenTear", "MALICIOUS", DS2_COUNT, 100),
-                    new DumpInstanceCreator("ProcMon", "BENIGN", DS3_COUNT, 50),
-                    new DumpInstanceCreator("Cerber", "MALICIOUS", DS4_COUNT, 100),
-                    new DumpInstanceCreator("CryptoLocker3", "MALICIOUS", DS5_COUNT, 100),
-                    new DumpInstanceCreator("Vipasana", "MALICIOUS", DS6_COUNT, 0),
+                    new DumpInstanceCreator(DSB1.getName(), "BENIGN", DSB1.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB2.getName(), "BENIGN", DSB2.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB3.getName(), "BENIGN", DSB3.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB4.getName(), "BENIGN", DSB4.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSB5.getName(), "BENIGN", DSB5.getCount(), TRAIN_TEST_SPLIT_PERCENTAGE),
+                    new DumpInstanceCreator(DSM3.getName(), "MALICIOUS", DSM3.getCount(), 100),
+                    new DumpInstanceCreator(DSM4.getName(), "MALICIOUS", DSM4.getCount(), 0),
             },
     };
 
