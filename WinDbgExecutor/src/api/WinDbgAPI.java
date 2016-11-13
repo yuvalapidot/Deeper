@@ -41,11 +41,10 @@ public class WinDbgAPI {
         return exited;
     }
 
-    public static Dump getDump(String dumpPath, String classification) throws IOException {
+    public static Dump getDump(String dumpPath) throws IOException {
         Dump dump = new Dump(dumpPath);
         List<Process> processes = getProcessesFromDump(dumpPath);
         dump.addProcesses(processes);
-        dump.setClassification(classification);
         return dump;
     }
 

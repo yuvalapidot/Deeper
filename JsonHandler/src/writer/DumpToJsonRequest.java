@@ -6,21 +6,7 @@ public class DumpToJsonRequest extends Observable {
 
     private String dumpPath;
     private String jsonPath;
-    private String dumpClassification = "Unknown";
     private boolean skipIfExists = false;
-
-    public DumpToJsonRequest(String dumpPath, String jsonPath, String dumpClassification, boolean skipIfExists) {
-        this.dumpPath = dumpPath;
-        this.jsonPath = jsonPath;
-        this.dumpClassification = dumpClassification;
-        this.skipIfExists = skipIfExists;
-    }
-
-    public DumpToJsonRequest(String dumpPath, String jsonPath, String dumpClassification) {
-        this.dumpPath = dumpPath;
-        this.jsonPath = jsonPath;
-        this.dumpClassification = dumpClassification;
-    }
 
     public DumpToJsonRequest(String dumpPath, String jsonPath, boolean skipIfExists) {
         this.dumpPath = dumpPath;
@@ -47,14 +33,6 @@ public class DumpToJsonRequest extends Observable {
 
     public void setJsonPath(String jsonPath) {
         this.jsonPath = jsonPath;
-    }
-
-    public String getDumpClassification() {
-        return dumpClassification;
-    }
-
-    public void setDumpClassification(String dumpClassification) {
-        this.dumpClassification = dumpClassification;
     }
 
     public boolean isSkipIfExists() {

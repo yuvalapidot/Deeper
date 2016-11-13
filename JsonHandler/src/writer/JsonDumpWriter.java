@@ -27,13 +27,14 @@ public class JsonDumpWriter {
     public void dumpToJson(DumpToJsonRequest request) throws IOException {
         log.info("Trying to parse Dump: " + request.getDumpPath() + " into JSON: " + request.getJsonPath());
         File file = new File(request.getJsonPath());
+        file.getParentFile().mkdirs();
         if (request.isSkipIfExists() & file.exists()) {
             log.info("JSON file: " + request.getJsonPath() + " already exists. Skipping Dump: " + request.getDumpPath());
             return;
         }
         Dump dump;
         try {
-            dump = WinDbgAPI.getDump(request.getDumpPath(), request.getDumpClassification());
+            dump = WinDbgAPI.getDump(request.getDumpPath());
         } catch (IOException e) {
             log.error("Encountered an error while trying to process Dump: " + request.getDumpPath(), e);
             throw e;
