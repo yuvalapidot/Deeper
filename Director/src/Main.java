@@ -26,7 +26,7 @@ public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
 
-    private static final int upToN = 5;
+    private static final int upToN = 4;
     private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Jsons";
     private static final String csvPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results 80\\Experiment";
     private static final String csvName = "-call-gram-data-table.csv";
@@ -337,12 +337,11 @@ public class Main {
 
     private static List<DumpInstance> getDumpInstances(List<Dump> dumps, DumpInstanceCreator[] creators) {
         List<DumpInstance> instances = new ArrayList<>();
-        for (Dump dump : dumps) {
-            for (DumpInstanceCreator creator : creators) {
+        for (DumpInstanceCreator creator : creators) {
+            for (Dump dump : dumps) {
                 DumpInstance instance = creator.create(dump);
                 if (instance != null) {
                     instances.add(instance);
-                    break;
                 }
             }
         }
