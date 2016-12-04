@@ -17,7 +17,7 @@ public class DataTableCsvWriter {
 
     private final Logger log = LogManager.getLogger(DataTableCsvWriter.class);
 
-    private static final String INSTANCES = "Instance";
+    private static final String INSTANCES = "Time";
     private static final char CSV_DELIMITER = ',';
     private static final char CSV_NON_DELIMITER = '|';
     private static final char CSV_NEW_LINE = '\n';
@@ -40,8 +40,8 @@ public class DataTableCsvWriter {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
-//        StringBuilder builder = new StringBuilder(INSTANCES + CSV_DELIMITER);
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(INSTANCES + CSV_DELIMITER);
+//        StringBuilder builder = new StringBuilder();
         Set<Feature> features = table.getFeatures();
         boolean addSeparator = false;
         for (Feature feature : features) {
@@ -58,7 +58,7 @@ public class DataTableCsvWriter {
                     continue;
                 }
                 builder.append(CSV_NEW_LINE);
-//                builder.append(csvString(instance.getName()) + CSV_DELIMITER);
+                builder.append(csvString(instance.getName().split("\\\\")[7].replace("MalSnap-IIS_sn_", "").replace(".json", "")) + CSV_DELIMITER);
                 addSeparator = false;
                 for (Feature feature : features) {
                     if (addSeparator) {

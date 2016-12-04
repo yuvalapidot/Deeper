@@ -22,8 +22,8 @@ public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
 
-    private static final String experimentRootFolder = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results";
-    private static final String resultFilePath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results\\Results Combined.csv";
+    private static final String experimentRootFolder = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results 50";
+    private static final String resultFilePath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results 50\\Results Combined.csv";
 
     private static final FeatureKey<String, String> keySchemeFeatureKey = new FeatureKey<>("Key_Scheme");
     private static final FeatureKey<String, String> keyDatasetFeatureKey = new FeatureKey<>("Key_Dataset");
