@@ -3,16 +3,31 @@ package model.memory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CallGram {
+public class Sequence {
 
     private List<Call> calls;
 
-    public CallGram() {
+    public Sequence() {
         calls = new ArrayList<>();
     }
 
-    public CallGram(List<Call> calls) {
+    public Sequence(Call call) {
+        this();
+        calls.add(call);
+    }
+
+    public Sequence(Sequence sequence) {
+        this();
+        calls.addAll(sequence.calls);
+    }
+
+    public Sequence(List<Call> calls) {
         this.calls = calls;
+    }
+
+    public Sequence(Sequence sequence, Call call) {
+        this(sequence);
+        calls.add(call);
     }
 
     public void addCall(Call call) {
@@ -27,21 +42,29 @@ public class CallGram {
         return calls.remove(index);
     }
 
+    public List<Call> getCalls() {
+        return calls;
+    }
+
     public int size() {
         return calls.size();
     }
 
+    public Sequence subSequence(int from, int to) {
+        return new Sequence(calls.subList(from, to));
+    }
+
     @Override
     public String toString() {
-        return size() + "CallGram{" + calls + '}';
+        return size() + "Sequence{" + calls + '}';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CallGram)) return false;
+        if (!(o instanceof Sequence)) return false;
 
-        CallGram callGram = (CallGram) o;
+        Sequence callGram = (Sequence) o;
 
         return calls.equals(callGram.calls);
 

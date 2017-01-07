@@ -1,14 +1,14 @@
 package model.feature;
 
-import model.memory.CallGram;
+import model.memory.Sequence;
 
-public class CallGramFeatureKey extends FeatureKey<CallGram, Integer> {
+public class SequenceFeatureKey extends FeatureKey<Sequence, Integer> {
 
-    public CallGramFeatureKey(CallGram feature) {
+    public SequenceFeatureKey(Sequence feature) {
         super(feature, 0);
     }
 
-    public CallGramFeatureKey(CallGram feature, Integer defaultValue) {
+    public SequenceFeatureKey(Sequence feature, Integer defaultValue) {
         super(feature, defaultValue);
     }
 

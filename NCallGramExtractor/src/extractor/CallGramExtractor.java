@@ -1,7 +1,7 @@
 package extractor;
 
 import model.data.DataTable;
-import model.feature.CallGramFeatureKey;
+import model.feature.SequenceFeatureKey;
 import model.feature.Feature;
 import model.feature.FeatureKey;
 import model.feature.FeatureValue;
@@ -35,9 +35,9 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
     public void extract(DataTable table) {
         for (DumpInstance instance : instances) {
             if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
-                Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
-                for (CallGram callGram : callGrams.keySet()) {
-                    table.put(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
+                Map<Sequence, Integer> callGrams = getDumpCallGrams(instance.getInstance());
+                for (Sequence callGram : callGrams.keySet()) {
+                    table.put(instance, new SequenceFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)));
                 }
             }
         }
@@ -47,18 +47,18 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
             FeatureKey<String, Integer> instanceUniqueFeatureKey = new FeatureKey<String, Integer>(n + "GramTrainUnique");
             FeatureKey<String, Integer> instanceBenignUniqueFeatureKey = new FeatureKey<String, Integer>(n + "GramTrainBenignUnique");
             if (instance.getSetType().equals(InstanceSetType.TRAIN_SET) && (trainDiffFeature | trainBenignDiffFeature)) {
-                Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
-                for (CallGram callGram : callGrams.keySet()) {
-                    Feature feature = table.getFeature(new CallGramFeatureKey(callGram, 0));
+                Map<Sequence, Integer> callGrams = getDumpCallGrams(instance.getInstance());
+                for (Sequence callGram : callGrams.keySet()) {
+                    Feature feature = table.getFeature(new SequenceFeatureKey(callGram, 0));
                     if (trainDiffFeature && feature.size() == 1) {
                         instanceUniqueCounter++;
                     }
                 }
             }
             if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
-                Map<CallGram, Integer> callGrams = getDumpCallGrams(instance.getInstance());
-                for (CallGram callGram : callGrams.keySet()) {
-                    if (!table.putIfFeatureExists(instance, new CallGramFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)))) {
+                Map<Sequence, Integer> callGrams = getDumpCallGrams(instance.getInstance());
+                for (Sequence callGram : callGrams.keySet()) {
+                    if (!table.putIfFeatureExists(instance, new SequenceFeatureKey(callGram, 0), new FeatureValue<>(callGrams.get(callGram)))) {
                         instanceUniqueCounter++;
                     }
                 }
@@ -72,13 +72,13 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
         }
     }
 
-    private Map<CallGram, Integer> getDumpCallGrams(Dump dump) {
-        Map<CallGram, Integer> callGrams = new LinkedHashMap<>();
+    private Map<Sequence, Integer> getDumpCallGrams(Dump dump) {
+        Map<Sequence, Integer> callGrams = new LinkedHashMap<>();
         for (Process process : dump.getProcesses()) {
             for (Thread thread : process.getThreads()) {
                 CallStack stack = thread.getCallStack();
                 for (int i = 0; i <= stack.size() - n; i++) {
-                    CallGram callGram = new CallGram(stack.getCallList().subList(i, i + n));
+                    Sequence callGram = new Sequence(stack.getCallList().subList(i, i + n));
                     Integer value;
                     if ((value = callGrams.putIfAbsent(callGram, 1)) != null) {
                         callGrams.put(callGram, value + 1);
