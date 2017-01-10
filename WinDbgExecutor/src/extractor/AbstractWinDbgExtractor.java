@@ -1,6 +1,5 @@
 package extractor;
 
-import api.WinDbgAPI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,8 +9,8 @@ public abstract class AbstractWinDbgExtractor<T> implements IExtractor<T> {
 
     protected final Logger log = LogManager.getLogger(getClass());
 
-    private static String regexString = "[0-9]*: kd> ";
-    private static int kdLineLength = 7;
+    private static String regexString = "([0-9]*: )?kd> ";
+    private static int kdLineLength = 4;
 
     public T extract(String input) {
         BufferedReader bufferedReader = new BufferedReader(new StringReader(input));

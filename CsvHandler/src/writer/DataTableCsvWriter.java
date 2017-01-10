@@ -11,6 +11,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 public class DataTableCsvWriter {
@@ -28,6 +31,20 @@ public class DataTableCsvWriter {
         csv.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(csv)){
             writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter()));
+        } catch (IOException e) {
+            log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
+            throw e;
+        }
+        log.info("Finished writing Data Table into csv: " + request.getCsvPath());
+        request.notifyObservers();
+    }
+
+    public void dataTablesToCsv(DataTablesToCsvRequest request) throws IOException {
+        log.info("Trying to write Data Table into csv: " + request.getCsvPath());
+        File csv = new File(request.getCsvPath());
+        csv.getParentFile().mkdirs();
+        try (FileWriter writer = new FileWriter(csv)){
+            writeTablesToCsv(writer, request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter());
         } catch (IOException e) {
             log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
             throw e;
@@ -58,7 +75,8 @@ public class DataTableCsvWriter {
                     continue;
                 }
                 builder.append(CSV_NEW_LINE);
-                builder.append(csvString(instance.getName().split("\\\\")[7].replace("MalSnap-IIS_sn_", "").replace(".json", "")) + CSV_DELIMITER);
+                String[] splitedName = instance.getName().split("\\\\");
+                builder.append(csvString(splitedName[splitedName.length - 1].replace("MalSnap-IIS_sn_", "").replace(".json", "")) + CSV_DELIMITER);
                 addSeparator = false;
                 for (Feature feature : features) {
                     if (addSeparator) {
@@ -66,7 +84,7 @@ public class DataTableCsvWriter {
                     } else {
                         addSeparator = true;
                     }
-                    FeatureValue value =  getValue(table, instance, feature, representation);
+                    FeatureValue value =  getValue(instance, feature, representation);
                     if (value.getValue() != null) {
                         builder.append(csvString(value));
                     }
@@ -76,7 +94,74 @@ public class DataTableCsvWriter {
         return builder.toString();
     }
 
-    private FeatureValue getValue(DataTable table, Instance instance, Feature feature, CsvNumberRepresentation representation) {
+    private void writeTablesToCsv(FileWriter writer, DataTable[] tables, CsvNumberRepresentation[] representations, Set<InstanceSetType> instanceSetTypesFilter) throws IOException {
+        log.debug("Converting Data Tables into csv String. Using '" + CSV_DELIMITER
+                + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
+                + "' with '" + CSV_NON_DELIMITER + "'.");
+//        StringBuilder builder = new StringBuilder(INSTANCES + CSV_DELIMITER);
+        StringBuilder builder = new StringBuilder();
+        Set<Feature> features = new LinkedHashSet<>();
+        for (DataTable table : tables) {
+            features.addAll(table.getFeatures());
+        }
+        List<Feature> classFeatures = new ArrayList<>();
+        for (Feature feature : features) {
+            if (feature.getKey().getKey().equals("Class")) {
+                classFeatures.add(feature);
+            }
+        }
+        for (int i = 0; i < classFeatures.size() - 1; i++) {
+            features.remove(classFeatures.get(i));
+        }
+        boolean addSeparator = false;
+        for (Feature feature : features) {
+            for (CsvNumberRepresentation representation : representations) {
+                if (addSeparator) {
+                    builder.append(CSV_DELIMITER);
+                } else {
+                    addSeparator = true;
+                }
+                if (feature.getKey().getKey().equals("Class")) {
+                    builder.append(csvString(feature.getKey()));
+                    break;
+                }
+                builder.append(csvString(representation.toString() + "_" + feature.getKey()));
+            }
+        }
+        writer.write(builder.toString());
+        builder = new StringBuilder();
+        for (InstanceSetType type : instanceSetTypesFilter) {
+            for (Instance instance : tables[0].getInstances()) {
+                if (instance.getSetType() != type) {
+                    continue;
+                }
+                builder.append(CSV_NEW_LINE);
+//                builder.append(csvString(instance.getName()) + CSV_DELIMITER);
+                addSeparator = false;
+                for (Feature feature : features) {
+                    for (CsvNumberRepresentation representation : representations) {
+                        if (addSeparator) {
+                            builder.append(CSV_DELIMITER);
+                        } else {
+                            addSeparator = true;
+                        }
+                        FeatureValue value =  getValue(instance, feature, representation);
+                        if (value.getValue() != null) {
+                            builder.append(csvString(value));
+                        }
+                        if (feature.getKey().getKey().equals("Class")) {
+                            break;
+                        }
+                    }
+                }
+                writer.write(builder.toString());
+                builder = new StringBuilder();
+            }
+        }
+    }
+
+    private FeatureValue getValue(Instance instance, Feature feature, CsvNumberRepresentation representation) {
+        DataTable table = feature.getDataTable();
         if (representation.equals(CsvNumberRepresentation.INTEGER_REPRESENTATION)) {
             return feature.getValue(instance);
         } else if (representation.equals(CsvNumberRepresentation.BINARY_REPRESENTATION)) {

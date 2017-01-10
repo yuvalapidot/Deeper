@@ -1,5 +1,6 @@
 package model.feature;
 
+import model.data.DataTable;
 import model.instance.Instance;
 
 import java.util.ArrayList;
@@ -11,9 +12,11 @@ public class Feature <S> {
 
     private final FeatureKey<?, S> key;
     private final Map<Instance, FeatureValue<S>> values;
+    private final DataTable dataTable;
 
-    public Feature(FeatureKey<?, S> key) {
+    public Feature(FeatureKey<?, S> key, DataTable dataTable) {
         this.key = key;
+        this.dataTable = dataTable;
         values = new LinkedHashMap<>();
     }
 
@@ -56,5 +59,9 @@ public class Feature <S> {
 
     public int size() {
         return values.size();
+    }
+
+    public DataTable getDataTable() {
+        return dataTable;
     }
 }

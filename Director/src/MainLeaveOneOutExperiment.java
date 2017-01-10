@@ -30,7 +30,7 @@ public class MainLeaveOneOutExperiment {
     private static final String csvPath = "D:\\Dropbox\\NGrams\\Results\\";
     private static final String csvName = "-call-gram.csv";
 
-    private static final Set<InstanceSetType> TRAIN_TEST = new HashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
+    private static final Set<InstanceSetType> TRAIN_TEST = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
 
     private static final int DumpsCount = 100;
 
@@ -43,18 +43,18 @@ public class MainLeaveOneOutExperiment {
         for (String benignName : BenignNames) {
             for (String maliciousName : MaliciousNames) {
                 DumpInstanceCreator[] creators = new DumpInstanceCreator[BenignNames.length + MaliciousNames.length];
-                for (int i = 0; i < BenignNames.length; i++) {
-                    if (!BenignNames[i].equals(benignName)) {
-                        creators[i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", DumpsCount, 100);
-                    } else {
-                        creators[i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", DumpsCount, 0);
-                    }
-                }
                 for (int i = 0; i < MaliciousNames.length; i++) {
                     if (!MaliciousNames[i].equals(maliciousName)) {
-                        creators[BenignNames.length + i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", DumpsCount, 100);
+                        creators[i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", DumpsCount, 100);
                     } else {
-                        creators[BenignNames.length + i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", DumpsCount, 0);
+                        creators[i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", DumpsCount, 0);
+                    }
+                }
+                for (int i = 0; i < BenignNames.length; i++) {
+                    if (!BenignNames[i].equals(benignName)) {
+                        creators[MaliciousNames.length + i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", DumpsCount, 100);
+                    } else {
+                        creators[MaliciousNames.length + i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", DumpsCount, 0);
                     }
                 }
                 List<DumpInstance> dumpInstances = getDumpInstances(dumps, creators);
@@ -66,16 +66,19 @@ public class MainLeaveOneOutExperiment {
                     }
                 }
                 log.info("Experiment " + experimentName + " train percentage: " + (((double) trainCounter) / dumpInstances.size()) * 100);
+                DataTable[] tables = new DataTable[upToN];
                 for (int j = 1; j <= upToN; j++) {
                     IFeatureExtractor<DumpInstance> extractor = new CallGramExtractor(j);
                     DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
                     creator.addExtractor(extractor);
                     DataTable table = creator.createDataTable();
+                    tables[j - 1] = table;
                     writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST));
                     writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST));
                     writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST));
                     writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST));
                 }
+//                writer.dataTablesToCsv(new DataTablesToCsvRequest(tables, csvPath + experimentName + "\\" + experimentName + "-combined-" + csvName, new CsvNumberRepresentation[] {CsvNumberRepresentation.BINARY_REPRESENTATION ,CsvNumberRepresentation.INTEGER_REPRESENTATION, CsvNumberRepresentation.TF_REPRESENTATION, CsvNumberRepresentation.TFIDF_REPRESENTATION}, TRAIN_TEST));
             }
         }
     }

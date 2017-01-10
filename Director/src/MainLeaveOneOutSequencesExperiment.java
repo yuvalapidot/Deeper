@@ -1,6 +1,5 @@
 import creator.DataTableCreator;
 import creator.DumpToDataTableCreator;
-import extractor.CallGramExtractor;
 import extractor.IFeatureExtractor;
 import extractor.SequenceExtractor;
 import model.data.DataTable;
@@ -26,13 +25,14 @@ public class MainLeaveOneOutSequencesExperiment {
 
     private static final Logger log = LogManager.getLogger(MainLeaveOneOutSequencesExperiment.class);
 
-    private static final int[] minimumSupports = {5, 10};
-    private static final int maximumSupport = 100;
+    private static final int[] minimumSupports = {1000};
+    private static final int maximumSupport = 10000;
     private static final int minimumSequenceLength = 4;
     private static final int maximumSequenceLength = 4;
+    private static final int batchSize = 100;
 
-    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Jsons";
-    private static final String csvPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results-Sequence\\";
+    private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
+    private static final String csvPath = "D:\\Dropbox\\NGrams\\Results-Sequence\\";
     private static final String csvName = "-sequence.csv";
 
     private static final Set<InstanceSetType> TRAIN_TEST = new HashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
@@ -72,7 +72,7 @@ public class MainLeaveOneOutSequencesExperiment {
                 }
                 log.info("Experiment " + experimentName + " train percentage: " + (((double) trainCounter) / dumpInstances.size()) * 100);
                 for (int j : minimumSupports) {
-                    IFeatureExtractor<DumpInstance> extractor = new SequenceExtractor(j, maximumSupport, minimumSequenceLength, maximumSequenceLength);
+                    IFeatureExtractor<DumpInstance> extractor = new SequenceExtractor(j, maximumSupport, minimumSequenceLength, maximumSequenceLength, batchSize);
                     DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
                     creator.addExtractor(extractor);
                     DataTable table = creator.createDataTable();

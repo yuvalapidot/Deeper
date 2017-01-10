@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Main {
 
-    private static final String dumpsDirectory = "D:\\DeepFeaturesExperiment\\Dumps";
+    private static final String dumpsDirectory = "D:\\DeepFeaturesExperiment\\Dumps\\HyperV";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         JsonDumpWriter writer = new JsonDumpWriter();

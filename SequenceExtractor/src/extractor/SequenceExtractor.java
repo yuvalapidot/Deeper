@@ -1,22 +1,17 @@
 package extractor;
 
 import model.data.DataTable;
-import model.feature.Feature;
-import model.feature.FeatureKey;
-import model.feature.SequenceFeatureKey;
-import model.feature.FeatureValue;
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
 import model.memory.*;
 import model.memory.Process;
 import model.memory.Thread;
-import sequence.GSPSequenceFinder;
+import sequence.ISequenceCounter;
 import sequence.ISequenceFinder;
+import sequence.NonContiguousSequenceCounter;
 import sequence.PrefixSpanSequenceFinder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
@@ -24,15 +19,17 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
     private int maximumSupport;
     private int minimumSequenceLength;
     private int maximumSequenceLength;
+    private int batchSize;
 
     private boolean trainDiffFeature = false;
     private boolean trainBenignDiffFeature = false;
 
-    public SequenceExtractor(int minimumSupport, int maximumSupport, int minimumSequenceLength, int maximumSequenceLength) {
+    public SequenceExtractor(int minimumSupport, int maximumSupport, int minimumSequenceLength, int maximumSequenceLength, int batchSize) {
         this.minimumSupport = minimumSupport;
         this.maximumSupport = maximumSupport;
         this.minimumSequenceLength = minimumSequenceLength;
         this.maximumSequenceLength = maximumSequenceLength;
+        this.batchSize = batchSize;
     }
 
     @Override
@@ -44,55 +41,50 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
     @Override
     public void extract(DataTable table) {
-        for (DumpInstance instance : instances) {
-            if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
-                Map<Sequence, Integer> sequences = getDumpSequences(instance.getInstance());
-                for (Sequence subSequence : sequences.keySet()) {
-                    table.put(instance, new SequenceFeatureKey(subSequence, 0), new FeatureValue<>(sequences.get(subSequence)));
-                }
-            }
-        }
-        for (DumpInstance instance : instances) {
-            int instanceUniqueCounter = 0;
-            int instanceBenignUniqueCounter = 0;
-            FeatureKey<String, Integer> instanceUniqueFeatureKey = new FeatureKey<String, Integer>("SequenceTrainUnique");
-            FeatureKey<String, Integer> instanceBenignUniqueFeatureKey = new FeatureKey<String, Integer>("SequenceTrainBenignUnique");
-            if (instance.getSetType().equals(InstanceSetType.TRAIN_SET) && (trainDiffFeature | trainBenignDiffFeature)) {
-                Map<Sequence, Integer> subSequences = getDumpSequences(instance.getInstance());
-                for (Sequence subSequence : subSequences.keySet()) {
-                    Feature feature = table.getFeature(new SequenceFeatureKey(subSequence, 0));
-                    if (trainDiffFeature && feature.size() == 1) {
-                        instanceUniqueCounter++;
-                    }
-                }
-            }
-            if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
-                Map<Sequence, Integer> sequences = getDumpSequences(instance.getInstance());
-                for (Sequence subSequence : sequences.keySet()) {
-                    if (!table.putIfFeatureExists(instance, new SequenceFeatureKey(subSequence, 0), new FeatureValue<>(sequences.get(subSequence)))) {
-                        instanceUniqueCounter++;
-                    }
-                }
-            }
-            if (trainDiffFeature) {
-                table.put(instance, instanceUniqueFeatureKey, new FeatureValue<>(instanceUniqueCounter));
-            }
-            if (trainBenignDiffFeature) {
-                table.put(instance, instanceBenignUniqueFeatureKey, new FeatureValue<>(instanceBenignUniqueCounter));
-            }
-        }
-
+        Set<Sequence> sequences = getAllTrainSequences();
+        ISequenceCounter counter = new NonContiguousSequenceCounter();
+        counter.countSequences(table, instances, sequences);
     }
 
-    private Map<Sequence, Integer> getDumpSequences(Dump dump) {
+    private Set<Sequence> getAllTrainSequences() {
+        Set<Sequence> sequences = new LinkedHashSet<>();
         ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
-        List<List<Call>> sequences = new ArrayList<>();
-        for (Process process : dump.getProcesses()) {
-            for (Thread thread : process.getThreads()) {
-                sequences.add(thread.getCallStack().getCallList());
+        for (Set<Dump> dumpBatch : getDumpsBatches()) {
+            sequences.addAll(getAllDumpsSequences(dumpBatch, finder));
+        }
+        return sequences;
+    }
+
+    private List<Set<Dump>> getDumpsBatches() {
+        List<Set<Dump>> batches = new ArrayList<>();
+        int counter = 0;
+        Set<Dump> batch = new LinkedHashSet<>();
+        for (DumpInstance instance : instances) {
+            if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
+                batch.add(instance.getInstance());
+                counter++;
+                if (counter % batchSize == 0) {
+                    batches.add(batch);
+                    batch = new LinkedHashSet<>();
+                }
             }
         }
-        return finder.generateSubSequences(sequences);
+        if (!batch.isEmpty()) {
+            batches.add(batch);
+        }
+        return batches;
+    }
+
+    private Set<Sequence> getAllDumpsSequences(Set<Dump> dumps, ISequenceFinder finder) {
+        List<List<Call>> sequences = new ArrayList<>();
+        for (Dump dump : dumps) {
+            for (Process process : dump.getProcesses()) {
+                for (Thread thread : process.getThreads()) {
+                    sequences.add(thread.getCallStack().getCallList());
+                }
+            }
+        }
+        return finder.generateSubSequences(sequences).keySet();
     }
 
 }

@@ -77,7 +77,7 @@ public class DataTable {
     private Feature getCreateFeature(FeatureKey key) {
         Feature feature = featureMap.get(key);
         if (feature == null) {
-            feature = new Feature(key);
+            feature = new Feature(key, this);
             features.add(feature);
             featureMap.put(key, feature);
         }
