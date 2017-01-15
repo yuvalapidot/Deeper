@@ -10,9 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reader.JsonDumpReader;
 import reader.JsonToDumpRequest;
-import writer.CsvNumberRepresentation;
 import writer.DataTableCsvWriter;
-import writer.DataTableToCsvRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,10 +74,10 @@ public class MainLeaveOneOutSequencesExperiment {
                     DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
                     creator.addExtractor(extractor);
                     DataTable table = creator.createDataTable();
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST));
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST));
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST));
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST));
                 }
             }
         }
