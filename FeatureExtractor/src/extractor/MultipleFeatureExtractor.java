@@ -36,4 +36,12 @@ public class MultipleFeatureExtractor<T extends Instance> extends AbstractFeatur
         extract(table);
         return table;
     }
+
+    @Override
+    public void extractToDataBase() {
+        for (IFeatureExtractor<T> extractor : extractors) {
+            extractor.setInstances(instances);
+            extractor.extractToDataBase();
+        }
+    }
 }

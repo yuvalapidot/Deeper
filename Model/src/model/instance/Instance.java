@@ -5,6 +5,8 @@ public abstract class Instance<T> {
     protected final T instance;
     private InstanceSetType setType = InstanceSetType.TRAIN_SET;
     private String classification = "Unknown";
+    private String type = "UNKNOWN";
+    private int timestamp = 0;
 
     public Instance(T instance, InstanceSetType setType, String classification) {
         this.instance = instance;
@@ -41,6 +43,22 @@ public abstract class Instance<T> {
 
     public void setSetType(InstanceSetType setType) {
         this.setType = setType;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public int getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(int timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override

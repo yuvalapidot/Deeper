@@ -10,6 +10,7 @@ import model.instance.InstanceSetType;
 import model.memory.*;
 import model.memory.Process;
 import model.memory.Thread;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,6 +30,11 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
         DataTable table = new DataTable();
         extract(table);
         return table;
+    }
+
+    @Override
+    public void extractToDataBase() {
+        throw new NotImplementedException();
     }
 
     @Override

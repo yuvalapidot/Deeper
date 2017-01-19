@@ -11,5 +11,7 @@ public interface IFeatureExtractor<T extends Instance> {
 
     DataTable extract();
 
+    void extractToDataBase();
+
     void setInstances(List<T> instances);
 }

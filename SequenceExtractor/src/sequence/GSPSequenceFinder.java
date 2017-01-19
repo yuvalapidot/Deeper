@@ -1,10 +1,15 @@
 package sequence;
 
 import model.PseudoCallList;
+import model.instance.DumpInstance;
 import model.memory.Call;
 import model.memory.Sequence;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class GSPSequenceFinder extends AbstractSequenceFinder {
 
@@ -12,19 +17,19 @@ public class GSPSequenceFinder extends AbstractSequenceFinder {
         super(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
     }
 
-    public Map<Sequence, Integer> generateSubSequences(List<List<Call>> sequences) {
-        List<PseudoCallList> pseudoSequences = toPseudoCallList(sequences);
+    public Map<Sequence, List<DumpInstance>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences) {
+        List<PseudoCallList> pseudoSequences = toPseudoCallList(dumps, sequences);
         Set<Call> alphaBet = getAlphaBet(pseudoSequences);
-        Map<Sequence, Integer> subSequences = new LinkedHashMap<>();
-        Map<Sequence, Integer> formerLayer = new LinkedHashMap<>();
-        formerLayer.put(new Sequence(), minimumSupport);
+        Map<Sequence, List<DumpInstance>> subSequences = new LinkedHashMap<>();
+        Map<Sequence, List<DumpInstance>> formerLayer = new LinkedHashMap<>();
+        formerLayer.put(new Sequence(), dumps);
         for (int i = 1; i <= maximumSequenceLength(pseudoSequences); i++) {
-            Map<Sequence, Integer> nextLayer = new LinkedHashMap<>();
+            Map<Sequence, List<DumpInstance>> nextLayer = new LinkedHashMap<>();
             for (Sequence subSequence : formerLayer.keySet()) {
                 for (Call call : alphaBet) {
                     Sequence newSubSequence = new Sequence(subSequence);
                     newSubSequence.addCall(call);
-                    nextLayer.put(newSubSequence, countSubSequence(pseudoSequences, newSubSequence));
+                    nextLayer.put(newSubSequence, getSubSequenceDumpSet(pseudoSequences, newSubSequence));
                 }
             }
             nextLayer = cleanSequenceNotSupported(nextLayer);
@@ -34,6 +39,11 @@ public class GSPSequenceFinder extends AbstractSequenceFinder {
             formerLayer = nextLayer;
         }
         return subSequences;
+    }
+
+    @Override
+    public void generateSubSequencesToDataBase(List<DumpInstance> dumps, List<List<Call>> sequences) {
+        throw new NotImplementedException();
     }
 
     private int maximumSequenceLength(List<PseudoCallList> sequences) {

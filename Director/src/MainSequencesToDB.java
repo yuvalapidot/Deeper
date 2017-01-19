@@ -4,7 +4,6 @@ import dal.sql.sqlite.DataAccessLayer;
 import dal.sql.sqlite.IDataAccessLayer;
 import extractor.IFeatureExtractor;
 import extractor.SequenceExtractor;
-import model.data.DataTable;
 import model.instance.DumpInstance;
 import model.memory.Dump;
 import org.apache.logging.log4j.LogManager;
@@ -21,28 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Main {
+public class MainSequencesToDB {
 
     private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
 
-    private static final int minimumSupport = 50;
-    private static final int maximumSupport = 10000;
+    private static final int minimumSupport = 101;
+    private static final int maximumSupport = 5000;
     private static final int minimumSequenceLength = 2;
-    private static final int maximumSequenceLength = 6;
+    private static final int maximumSequenceLength = 5;
     private static final int batchSize = 100;
 
     private static final String[] BenignNames = {"Baseline", "Procmon", "Avast", "Wireshark", "Defrag"};
     private static final String[] MaliciousNames = {"HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
 
-    private static final Logger log = LogManager.getLogger(Main.class);
+    private static final Logger log = LogManager.getLogger(MainSequencesToDB.class);
 
     public static void main(String[] args) throws IOException {
-        try (IDataAccessLayer dal = new DataAccessLayer()) {
-            log.info(dal.createDumpsTable("dumps"));
-        } catch (SQLException | IOException ex) {
-            log.error("Encountered an error", ex);
-            ex.printStackTrace();
-        }
         List<Dump> dumps = getDumps(getJsonFiles());
         DumpInstanceCreator[] creators = new DumpInstanceCreator[BenignNames.length + MaliciousNames.length];
         for (int i = 0; i < BenignNames.length; i++) {
@@ -52,17 +45,19 @@ public class Main {
                 creators[BenignNames.length + i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", batchSize, 100);
         }
         List<DumpInstance> dumpInstances = getDumpInstances(dumps, creators);
-        IFeatureExtractor<DumpInstance> extractor = new SequenceExtractor(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength, batchSize);
-        DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
-        creator.addExtractor(extractor);
-        DataTable table = creator.createDataTable();
-        List<String> featureNames = table.getFeatures().stream().map(feature -> feature.getKey().toString()).collect(Collectors.toList());
         try (IDataAccessLayer dal = new DataAccessLayer()) {
-            log.info(dal.addIntegerColumns("dumps", featureNames));
+            dal.createDumpsTable();
+            dal.createSequenceTable();
+            dal.createDumpSequenceTable();
+            dal.insertDumps(dumpInstances);
         } catch (SQLException | IOException ex) {
             log.error("Encountered an error", ex);
             ex.printStackTrace();
         }
+        IFeatureExtractor<DumpInstance> extractor = new SequenceExtractor(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength, batchSize);
+        DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
+        creator.addExtractor(extractor);
+        creator.createDataTableToDataBase();
     }
 
     private static List<File> getJsonFiles() throws IOException {
@@ -80,9 +75,11 @@ public class Main {
     private static List<DumpInstance> getDumpInstances(List<Dump> dumps, DumpInstanceCreator[] creators) {
         List<DumpInstance> instances = new ArrayList<>();
         for (DumpInstanceCreator creator : creators) {
+            int timestamp = 0;
             for (Dump dump : dumps) {
                 DumpInstance instance = creator.create(dump);
                 if (instance != null) {
+                    instance.setTimestamp(timestamp++);
                     instances.add(instance);
                 }
             }

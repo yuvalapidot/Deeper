@@ -39,6 +39,14 @@ public class DumpJsonsToDataTableCreator extends DataTableCreator {
         return table;
     }
 
+    @Override
+    public void createDataTableToDataBase() {
+        IFeatureExtractor<DumpInstance> extractor = new MultipleFeatureExtractor<>(extractors);
+        List<DumpInstance> instances = getDumpInstances(getDumps());
+        extractor.setInstances(instances);
+        extractor.extractToDataBase();
+    }
+
     private void addClassifications(DataTable table, List<DumpInstance> instances) {
         FeatureKey<String, String> classFeatureKey = new FeatureKey<>("Class", "Unknown");
         for (DumpInstance instance : instances) {

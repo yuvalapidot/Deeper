@@ -24,4 +24,6 @@ public abstract class DataTableCreator {
     }
 
     public abstract DataTable createDataTable();
+
+    public abstract void createDataTableToDataBase();
 }

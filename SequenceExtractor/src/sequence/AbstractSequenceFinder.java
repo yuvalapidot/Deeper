@@ -1,6 +1,7 @@
 package sequence;
 
 import model.PseudoCallList;
+import model.instance.DumpInstance;
 import model.memory.Call;
 import model.memory.Sequence;
 
@@ -20,12 +21,20 @@ abstract class AbstractSequenceFinder implements ISequenceFinder {
         this.maximumSequenceLength = maximumSequenceLength;
     }
 
-    List<PseudoCallList> toPseudoCallList(List<List<Call>> sequences) {
+    List<PseudoCallList> toPseudoCallList(List<DumpInstance> dumps, List<List<Call>> sequences) {
         List<PseudoCallList> pseudos = new ArrayList<>();
-        for (List<Call> sequence : sequences) {
-            pseudos.add(new PseudoCallList(sequence));
+        for (int i = 0; i < Math.min(sequences.size(), dumps.size()); i++) {
+            pseudos.add(new PseudoCallList(dumps.get(i), sequences.get(i)));
         }
         return pseudos;
+    }
+
+    List<DumpInstance> extractDumpList(List<PseudoCallList> sequences) {
+        List<DumpInstance> dumps = new ArrayList<>();
+        for (PseudoCallList sequence : sequences) {
+            dumps.add(sequence.getBelongsTo());
+        }
+        return dumps;
     }
 
     Set<Call> getAlphaBet(List<PseudoCallList> sequences) {
@@ -58,25 +67,25 @@ abstract class AbstractSequenceFinder implements ISequenceFinder {
         return cleanedMap;
     }
 
-    Map<Sequence, Integer> cleanSequenceNotSupported(Map<Sequence, Integer> map) {
-        Map<Sequence, Integer> cleanedMap = new LinkedHashMap<>();
+    Map<Sequence, List<DumpInstance>> cleanSequenceNotSupported(Map<Sequence, List<DumpInstance>> map) {
+        Map<Sequence, List<DumpInstance>> cleanedMap = new LinkedHashMap<>();
         for (Sequence sequence : map.keySet()) {
-            int value = map.get(sequence);
-            if (isSupported(value)) {
-                cleanedMap.put(sequence, value);
+            List<DumpInstance> dumps = map.get(sequence);
+            if (isSupported(dumps.size())) {
+                cleanedMap.put(sequence, dumps);
             }
         }
         return cleanedMap;
     }
 
-    int countSubSequence(List<PseudoCallList> sequences, Sequence subSequence) {
-        int count = 0;
+    List<DumpInstance> getSubSequenceDumpSet(List<PseudoCallList> sequences, Sequence subSequence) {
+        List<DumpInstance> dumps = new ArrayList<>();
         for (PseudoCallList sequence : sequences) {
             if (containsSubSequence(sequence, subSequence)) {
-                count++;
+                dumps.add(sequence.getBelongsTo());
             }
         }
-        return count;
+        return dumps;
     }
 
     private boolean containsSubSequence(PseudoCallList sequence, Sequence subSequence) {

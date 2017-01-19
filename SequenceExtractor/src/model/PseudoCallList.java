@@ -1,5 +1,6 @@
 package model;
 
+import model.instance.DumpInstance;
 import model.memory.Call;
 
 import java.util.Iterator;
@@ -9,15 +10,22 @@ public class PseudoCallList implements Iterable<Call> {
 
     private int pointer;
     private List<Call> calls;
+    private DumpInstance belongsTo;
 
-    public PseudoCallList(List<Call> calls) {
+    public PseudoCallList(DumpInstance belongsTo, List<Call> calls) {
+        this.belongsTo = belongsTo;
         pointer = 0;
         this.calls = calls;
     }
 
-    public PseudoCallList(List<Call> calls, int pointer) {
+    public PseudoCallList(DumpInstance belongsTo, List<Call> calls, int pointer) {
+        this.belongsTo = belongsTo;
         this.pointer = pointer;
         this.calls = calls;
+    }
+
+    public DumpInstance getBelongsTo() {
+        return belongsTo;
     }
 
     public int getPointer() {

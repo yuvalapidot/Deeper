@@ -1,14 +1,14 @@
 package extractor;
 
 import model.data.DataTable;
+import model.feature.FeatureKey;
+import model.feature.FeatureValue;
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
 import model.memory.*;
 import model.memory.Process;
 import model.memory.Thread;
-import sequence.ISequenceCounter;
 import sequence.ISequenceFinder;
-import sequence.NonContiguousSequenceCounter;
 import sequence.PrefixSpanSequenceFinder;
 
 import java.util.*;
@@ -40,28 +40,56 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
     }
 
     @Override
-    public void extract(DataTable table) {
-        Set<Sequence> sequences = getAllTrainSequences();
-        ISequenceCounter counter = new NonContiguousSequenceCounter();
-        counter.countSequences(table, instances, sequences);
+    public void extractToDataBase() {
+        getAllTrainSequencesToDataBase();
     }
 
-    private Set<Sequence> getAllTrainSequences() {
-        Set<Sequence> sequences = new LinkedHashSet<>();
+    @Override
+    public void extract(DataTable table) {
+        Map<Sequence, List<DumpInstance>> sequences = getAllTrainSequences();
+        for (Sequence sequence : sequences.keySet()) {
+            FeatureKey<Sequence, Integer> featureKey = new FeatureKey<>(sequence, 0);
+            for (DumpInstance dumpInstance : new LinkedHashSet<>(sequences.get(sequence))) {
+                FeatureValue<Integer> featureValue = new FeatureValue<>(Collections.frequency(sequences.get(sequence), dumpInstance));
+                table.put(dumpInstance, featureKey, featureValue);
+            }
+        }
+    }
+
+    private Map<Sequence, List<DumpInstance>> getAllTrainSequences() {
+        Map<Sequence, List<DumpInstance>> sequences = new LinkedHashMap<>();
         ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
-        for (Set<Dump> dumpBatch : getDumpsBatches()) {
-            sequences.addAll(getAllDumpsSequences(dumpBatch, finder));
+        for (Set<DumpInstance> dumpBatch : getDumpsBatches()) {
+            Map<Sequence, List<DumpInstance>> batchSequences = getAllDumpsSequences(dumpBatch, finder);
+            addSequencesToMap(sequences, batchSequences);
         }
         return sequences;
     }
 
-    private List<Set<Dump>> getDumpsBatches() {
-        List<Set<Dump>> batches = new ArrayList<>();
+    private void getAllTrainSequencesToDataBase() {
+        ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
+        for (Set<DumpInstance> dumpBatch : getDumpsBatches()) {
+            getAllDumpsSequencesToDataBase(dumpBatch, finder);
+        }
+    }
+
+    private void addSequencesToMap(Map<Sequence, List<DumpInstance>> map, Map<Sequence, List<DumpInstance>> sequences) {
+        for (Sequence sequence : sequences.keySet()) {
+            if (map.containsKey(sequence)) {
+                map.get(sequence).addAll(sequences.get(sequence));
+            } else {
+                map.put(sequence, sequences.get(sequence));
+            }
+        }
+    }
+
+    private List<Set<DumpInstance>> getDumpsBatches() {
+        List<Set<DumpInstance>> batches = new ArrayList<>();
         int counter = 0;
-        Set<Dump> batch = new LinkedHashSet<>();
+        Set<DumpInstance> batch = new LinkedHashSet<>();
         for (DumpInstance instance : instances) {
             if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
-                batch.add(instance.getInstance());
+                batch.add(instance);
                 counter++;
                 if (counter % batchSize == 0) {
                     batches.add(batch);
@@ -75,16 +103,29 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
         return batches;
     }
 
-    private Set<Sequence> getAllDumpsSequences(Set<Dump> dumps, ISequenceFinder finder) {
+    private Map<Sequence, List<DumpInstance>> getAllDumpsSequences(Set<DumpInstance> dumps, ISequenceFinder finder) {
+        List<DumpInstance> dumpList = new ArrayList<>();
         List<List<Call>> sequences = new ArrayList<>();
-        for (Dump dump : dumps) {
-            for (Process process : dump.getProcesses()) {
+        prepareDumpsAndSequences(dumps, dumpList, sequences);
+        return finder.generateSubSequences(dumpList, sequences);
+    }
+
+    private void getAllDumpsSequencesToDataBase(Set<DumpInstance> dumps, ISequenceFinder finder) {
+        List<DumpInstance> dumpList = new ArrayList<>();
+        List<List<Call>> sequences = new ArrayList<>();
+        prepareDumpsAndSequences(dumps, dumpList, sequences);
+        finder.generateSubSequencesToDataBase(dumpList, sequences);
+    }
+
+    private void prepareDumpsAndSequences(Set<DumpInstance> dumps, List<DumpInstance> dumpList, List<List<Call>> sequences) {
+        for (DumpInstance dumpInstance : dumps) {
+            for (Process process : dumpInstance.getInstance().getProcesses()) {
                 for (Thread thread : process.getThreads()) {
+                    dumpList.add(dumpInstance);
                     sequences.add(thread.getCallStack().getCallList());
                 }
             }
         }
-        return finder.generateSubSequences(sequences).keySet();
     }
 
 }

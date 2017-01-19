@@ -51,4 +51,16 @@ public class Dump {
     public void setName(String name) {
         this.name = name;
     }
+
+    public int processCount() {
+        return processes.size();
+    }
+
+    public int threadCount() {
+        int count = 0;
+        for (Process process : processes) {
+            count += process.getThreads().size();
+        }
+        return count;
+    }
 }
