@@ -5,16 +5,15 @@ import model.data.DataTable;
 import model.feature.Feature;
 import model.feature.FeatureKey;
 
+import java.util.stream.IntStream;
+
 abstract class AbstractDistanceMeasure implements IDistanceMeasure {
 
-    void checkSupervised(DataTable table) {
-        if (table.getFeature(new FeatureKey("Class")) == null) {
-            throw new DataUnsupervisedException("Class feature was not found in data - " +
-                    "data is considered unsupervised, TD4C method requires supervised data.");
+    protected double[] probability(int classPointer, int[][] bins) {
+        double[] probability = new double[bins.length];
+        for (int i = 0; i < bins.length; i++) {
+            probability[i] = bins[i][classPointer] / IntStream.of(bins[i]).sum();
         }
-    }
-
-    Feature getClass(DataTable table) {
-        return table.getFeature(new FeatureKey("Class"));
+        return probability;
     }
 }

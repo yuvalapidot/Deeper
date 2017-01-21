@@ -2,13 +2,31 @@ package td4c.measures;
 
 import model.data.DataTable;
 
+import java.util.stream.IntStream;
+
 public class KullbackLeiblerDistance extends AbstractDistanceMeasure {
 
-    public DataTable discreteData(DataTable table) {
-        checkSupervised(table);
 
-        return null;
+    @Override
+    public double cutoffScore(int numberOfClasses, int[][] bins) {
+        double klDistance = 0;
+        for (int i = 0; i < numberOfClasses; i++) {
+            for (int j = i + 1; j < numberOfClasses; j++) {
+                klDistance += skl(probability(i, bins), probability(j, bins));
+            }
+        }
+        return klDistance;
     }
 
+    private double kl(double[] P, double[] Q) {
+        double sum = 0;
+        for (int i = 0; i < P.length; i++) {
+            sum += P[i] * Math.log(P[i] / Q[i]);
+        }
+        return sum;
+    }
 
+    private double skl(double[] P, double[] Q) {
+        return (kl(P, Q) + kl(Q, P)) / 2;
+    }
 }

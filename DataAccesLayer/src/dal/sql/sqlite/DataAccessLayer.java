@@ -1,5 +1,8 @@
 package dal.sql.sqlite;
 
+import Model.DumpInstanceData;
+import Model.DumpSequenceRelationData;
+import Model.SequenceData;
 import model.instance.DumpInstance;
 import model.memory.Sequence;
 import org.apache.logging.log4j.LogManager;
@@ -86,22 +89,6 @@ public class DataAccessLayer implements IDataAccessLayer {
     }
 
     @Override
-    public boolean addIntegerColumns(String tableName, List<String> columns) {
-        boolean success = true;
-            for (String columnName : columns) {
-                String sql = "ALTER TABLE " + tableName + "\n"
-                        + "ADD COLUMN " + columnName + " integer default 0;";
-                log.info(sql);
-                try (Statement statement = connection.createStatement()) {
-                    success &= statement.execute(sql);
-                } catch (SQLException ex) {
-                    log.error("Encountered an error during table altering", ex);
-                }
-            }
-        return success;
-    }
-
-    @Override
     public boolean insertDumps(List<DumpInstance> dumps) {
         boolean success = true;
         String sql = "INSERT INTO " + dumpsTableName
@@ -169,6 +156,67 @@ public class DataAccessLayer implements IDataAccessLayer {
         } catch (SQLException ex) {
             log.error("Encountered an error during table insertion", ex);
             return false;
+        }
+    }
+
+    @Override
+    public List<DumpInstanceData> selectDumps() {
+        String sql = "SELECT dump_name, dump_type, dump_timestamp, dump_class, process_count, thread_count FROM " + dumpsTableName;
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(sql);
+            return DumpInstanceData.getDumpInstanceDataList(resultSet);
+        } catch (SQLException ex) {
+            log.error("Encountered an error during table selection", ex);
+            return null;
+        }
+    }
+
+    @Override
+    public List<SequenceData> selectSequences() {
+        String sql = "SELECT sequence, sequence_length FROM " + sequenceTableName;
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(sql);
+            return SequenceData.getSequenceDataList(resultSet);
+        } catch (SQLException ex) {
+            log.error("Encountered an error during table selection", ex);
+            return null;
+        }
+    }
+
+    @Override
+    public List<DumpSequenceRelationData> selectDumpSequenceRelation() {
+        String sql = "SELECT dump_name, sequence, sequence_count FROM " + dumpSequenceTableName;
+        return getDumpSequenceRelationData(sql);
+    }
+
+    @Override
+    public List<DumpSequenceRelationData> selectDumpSequenceRelationByDump(String dumpName) {
+        String sql = "SELECT dump_name, sequence, sequence_count FROM " + dumpSequenceTableName
+                + "\nWHERE dump_name = " + dumpName;
+        return getDumpSequenceRelationData(sql);
+    }
+
+    @Override
+    public List<DumpSequenceRelationData> selectDumpSequenceRelationBySequence(String sequence) {
+        String sql = "SELECT dump_name, sequence, sequence_count FROM " + dumpSequenceTableName
+                + "\nWHERE sequence = " + sequence;
+        return getDumpSequenceRelationData(sql);
+    }
+
+    @Override
+    public List<DumpSequenceRelationData> selectDumpSequenceRelation(String dumpName, String sequence) {
+        String sql = "SELECT dump_name, sequence, sequence_count FROM " + dumpSequenceTableName
+                + "\nWHERE dump_name = " + dumpName + " AND sequence = " + sequence;
+        return getDumpSequenceRelationData(sql);
+    }
+
+    private List<DumpSequenceRelationData> getDumpSequenceRelationData(String sql) {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(sql);
+            return DumpSequenceRelationData.getDumpSequenceRelationDataList(resultSet);
+        } catch (SQLException ex) {
+            log.error("Encountered an error during table selection", ex);
+            return null;
         }
     }
 

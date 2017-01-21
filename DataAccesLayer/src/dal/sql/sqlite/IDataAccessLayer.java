@@ -1,5 +1,8 @@
 package dal.sql.sqlite;
 
+import Model.DumpInstanceData;
+import Model.DumpSequenceRelationData;
+import Model.SequenceData;
 import model.instance.DumpInstance;
 import model.memory.Sequence;
 
@@ -22,5 +25,15 @@ public interface IDataAccessLayer extends Closeable {
 
     public boolean insertDumpSequenceRelation(DumpInstance dump, Sequence sequence, int count);
 
-    public boolean addIntegerColumns(String tableName, List<String> columns);
+    public List<DumpInstanceData> selectDumps();
+
+    public List<SequenceData> selectSequences();
+
+    public List<DumpSequenceRelationData> selectDumpSequenceRelation();
+
+    public List<DumpSequenceRelationData> selectDumpSequenceRelationByDump(String dumpName);
+
+    public List<DumpSequenceRelationData> selectDumpSequenceRelationBySequence(String sequence);
+
+    public List<DumpSequenceRelationData> selectDumpSequenceRelation(String dumpName, String sequence);
 }

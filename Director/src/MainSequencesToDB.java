@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class MainSequencesToDB {
 
-    private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
+    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Jsons";
 
     private static final int minimumSupport = 101;
     private static final int maximumSupport = 5000;

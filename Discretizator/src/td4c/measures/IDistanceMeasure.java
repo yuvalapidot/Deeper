@@ -4,5 +4,5 @@ import model.data.DataTable;
 
 public interface IDistanceMeasure {
 
-    public DataTable discreteData(DataTable table);
+    public double cutoffScore(int numberOfClasses, int[][] bins);
 }
