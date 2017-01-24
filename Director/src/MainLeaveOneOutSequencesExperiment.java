@@ -74,10 +74,10 @@ public class MainLeaveOneOutSequencesExperiment {
                     DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
                     creator.addExtractor(extractor);
                     DataTable table = creator.createDataTable();
-//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST));
-//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST));
-//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST));
-//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, , 0.1));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST, 100, 0.1));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST, 100, 0.1));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST, 100, 0.1));
                 }
             }
         }

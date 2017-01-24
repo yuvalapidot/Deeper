@@ -1,7 +1,9 @@
 package writer;
 
 import model.data.DataTable;
+import model.feature.DiscreteFeature;
 import model.feature.Feature;
+import model.feature.FeatureKey;
 import model.feature.FeatureValue;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
@@ -30,7 +32,7 @@ public class DataTableCsvWriter {
         File csv = new File(request.getCsvPath());
         csv.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(csv)){
-            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter()));
+            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter(), request.getFeaturePercentage(), request.getScoreThreshold()));
         } catch (IOException e) {
             log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
             throw e;
@@ -53,21 +55,38 @@ public class DataTableCsvWriter {
         request.notifyObservers();
     }
 
-    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypesFilter) {
+    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypesFilter, int featurePercentage, double featureThreshold) {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
-        StringBuilder builder = new StringBuilder(INSTANCES + CSV_DELIMITER);
-//        StringBuilder builder = new StringBuilder();
+//        StringBuilder builder = new StringBuilder(INSTANCES + CSV_DELIMITER);
+        StringBuilder builder = new StringBuilder();
         Set<Feature> features = table.getFeatures();
         boolean addSeparator = false;
+        int requiredFeaturesCount = featurePercentage * features.size() / 100;
+        int featureCounter = 0;
         for (Feature feature : features) {
             if (addSeparator) {
                 builder.append(CSV_DELIMITER);
             } else {
                 addSeparator = true;
             }
+            boolean shouldBreak = false;
+            if (feature instanceof DiscreteFeature) {
+                DiscreteFeature dFeature = (DiscreteFeature) feature;
+                if (dFeature.getDistanceMeasure() < featureThreshold) {
+                    shouldBreak = true;
+                }
+            }
+            if (featureCounter >= requiredFeaturesCount) {
+                shouldBreak = true;
+            }
+            if (shouldBreak) {
+                builder.append(csvString("Class"));
+                break;
+            }
             builder.append(csvString(feature.getKey()));
+            featureCounter++;
         }
         for (InstanceSetType type : instanceSetTypesFilter) {
             for (Instance instance : table.getInstances()) {
@@ -75,10 +94,24 @@ public class DataTableCsvWriter {
                     continue;
                 }
                 builder.append(CSV_NEW_LINE);
-                String[] splitedName = instance.getName().split("\\\\");
-                builder.append(csvString(splitedName[splitedName.length - 1].replace("MalSnap-IIS_sn_", "").replace(".json", "")) + CSV_DELIMITER);
+//                String[] splitedName = instance.getName().split("\\\\");
+//                builder.append(csvString(splitedName[splitedName.length - 1].replace("MalSnap-IIS_sn_", "").replace(".json", "")) + CSV_DELIMITER);
                 addSeparator = false;
+                featureCounter = 0;
                 for (Feature feature : features) {
+                    boolean shouldBreak = false;
+                    if (feature instanceof DiscreteFeature) {
+                        DiscreteFeature dFeature = (DiscreteFeature) feature;
+                        if (dFeature.getDistanceMeasure() < featureThreshold) {
+                            shouldBreak = true;
+                        }
+                    }
+                    if (featureCounter >= requiredFeaturesCount) {
+                        shouldBreak = true;
+                    }
+                    if (shouldBreak) {
+                        feature = table.getFeature(new FeatureKey<>("Class", "Unknown"));
+                    }
                     if (addSeparator) {
                         builder.append(CSV_DELIMITER);
                     } else {
@@ -88,6 +121,10 @@ public class DataTableCsvWriter {
                     if (value.getValue() != null) {
                         builder.append(csvString(value));
                     }
+                    if (shouldBreak) {
+                        break;
+                    }
+                    featureCounter++;
                 }
             }
         }

@@ -12,12 +12,16 @@ public class DataTableToCsvRequest extends Observable {
     private String csvPath;
     private CsvNumberRepresentation representation = CsvNumberRepresentation.INTEGER_REPRESENTATION;
     private Set<InstanceSetType> instanceSetTypesFilter;
+    private int featurePercentage;
+    private double scoreThreshold;
 
-    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypes) {
+    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypes, int featurePercentage, double scoreThreshold) {
         this.dataTable = dataTable;
         this.csvPath = csvPath;
         this.representation = representation;
         this.instanceSetTypesFilter = instanceSetTypes;
+        this.featurePercentage = featurePercentage;
+        this.scoreThreshold = scoreThreshold;
     }
 
     public DataTable getDataTable() {
@@ -50,5 +54,21 @@ public class DataTableToCsvRequest extends Observable {
 
     public void setInstanceSetTypesFilter(Set<InstanceSetType> instanceSetTypesFilter) {
         this.instanceSetTypesFilter = instanceSetTypesFilter;
+    }
+
+    public int getFeaturePercentage() {
+        return featurePercentage;
+    }
+
+    public void setFeaturePercentage(int featurePercentage) {
+        this.featurePercentage = featurePercentage;
+    }
+
+    public double getScoreThreshold() {
+        return scoreThreshold;
+    }
+
+    public void setScoreThreshold(double scoreThreshold) {
+        this.scoreThreshold = scoreThreshold;
     }
 }

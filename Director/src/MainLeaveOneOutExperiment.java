@@ -10,6 +10,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reader.JsonDumpReader;
 import reader.JsonToDumpRequest;
+import td4c.TD4CDiscretizator;
+import td4c.measures.CosineDistance;
+import td4c.measures.EntropyDistance;
+import td4c.measures.KullbackLeiblerDistance;
 import writer.CsvNumberRepresentation;
 import writer.DataTableCsvWriter;
 import writer.DataTableToCsvRequest;
@@ -66,19 +70,33 @@ public class MainLeaveOneOutExperiment {
                     }
                 }
                 log.info("Experiment " + experimentName + " train percentage: " + (((double) trainCounter) / dumpInstances.size()) * 100);
-                DataTable[] tables = new DataTable[upToN];
+//                DataTable[] tables = new DataTable[upToN];
                 for (int j = 1; j <= upToN; j++) {
                     IFeatureExtractor<DumpInstance> extractor = new CallGramExtractor(j);
                     DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
                     creator.addExtractor(extractor);
                     DataTable table = creator.createDataTable();
-                    tables[j - 1] = table;
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST));
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST));
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST));
-                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST));
+                    TD4CDiscretizator klDiscretizator = new TD4CDiscretizator(table.getInstances(), new KullbackLeiblerDistance());
+                    DataTable klTable3 = klDiscretizator.discrete(table, 3);
+                    DataTable klTable5 = klDiscretizator.discrete(table, 5);
+                    TD4CDiscretizator entropyDiscretizator = new TD4CDiscretizator(table.getInstances(), new EntropyDistance());
+                    DataTable entropyTable3 = entropyDiscretizator.discrete(table, 3);
+                    DataTable entropyTable5 = entropyDiscretizator.discrete(table, 5);
+                    TD4CDiscretizator cosineDiscretizator = new TD4CDiscretizator(table.getInstances(), new CosineDistance());
+                    DataTable cosineTable3 = cosineDiscretizator.discrete(table, 3);
+                    DataTable cosineTable5 = cosineDiscretizator.discrete(table, 5);
+//                    tables[j - 1] = table;
+                    writer.dataTableToCsv(new DataTableToCsvRequest(klTable3, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular-kl-3" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 10, 0.5));
+                    writer.dataTableToCsv(new DataTableToCsvRequest(klTable5, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular-kl-5" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 10, 0.5));
+                    writer.dataTableToCsv(new DataTableToCsvRequest(entropyTable3, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular-entropy-3" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 10, 0.5));
+                    writer.dataTableToCsv(new DataTableToCsvRequest(entropyTable5, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular-entropy-5" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 10, 0.5));
+                    writer.dataTableToCsv(new DataTableToCsvRequest(cosineTable3, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular-cosine-3" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 10, 0.5));
+                    writer.dataTableToCsv(new DataTableToCsvRequest(cosineTable5, csvPath + experimentName + "\\" + "Regular\\" + experimentName + "-" + j + "-regular-cosine-5" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 10, 0.5));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "Binary\\" + experimentName + "-" + j + "-binary" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST, 100));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF\\" + experimentName + "-" + j + "-tf" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST, 100));
+//                    writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + experimentName + "\\" + "TF-IDF\\" + experimentName + "-" + j + "-tf-idf" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST, 100));
                 }
-//                writer.dataTablesToCsv(new DataTablesToCsvRequest(tables, csvPath + experimentName + "\\" + experimentName + "-combined-" + csvName, new CsvNumberRepresentation[] {CsvNumberRepresentation.BINARY_REPRESENTATION ,CsvNumberRepresentation.INTEGER_REPRESENTATION, CsvNumberRepresentation.TF_REPRESENTATION, CsvNumberRepresentation.TFIDF_REPRESENTATION}, TRAIN_TEST));
+//                writer.dataTablesToCsv(new DataTablesToCsvRequest(tables, csvPath + experimentName + "\\" + experimentName + "-combined-" + csvName, new CsvNumberRepresentation[] {CsvNumberRepresentation.BINARY_REPRESENTATION ,CsvNumberRepresentation.INTEGER_REPRESENTATION, CsvNumberRepresentation.TF_REPRESENTATION, CsvNumberRepresentation.TFIDF_REPRESENTATION}, TRAIN_TEST, 100));
             }
         }
     }

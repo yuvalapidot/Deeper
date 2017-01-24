@@ -48,13 +48,13 @@ public class SequenceData {
         SequenceData that = (SequenceData) o;
 
         if (sequenceLength != that.sequenceLength) return false;
-        return sequence != null ? sequence.equals(that.sequence) : that.sequence == null;
+        return sequence != null ? sequence.toLowerCase().equals(that.sequence.toLowerCase()) : that.sequence == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = sequence != null ? sequence.hashCode() : 0;
+        int result = sequence != null ? sequence.toLowerCase().hashCode() : 0;
         result = 31 * result + sequenceLength;
         return result;
     }

@@ -43,6 +43,22 @@ public class DataTable {
         inverseDocumentFrequencies = new HashMap<>();
     }
 
+    public <S> void put(Feature<S> feature) {
+        features.add(feature);
+        featureMap.put(feature.getKey(), feature);
+        for (Instance instance : feature.getAllConcritInstances()) {
+            addInstance(instance);
+            if (feature.getValue(instance).getValue() instanceof Integer) {
+                Integer value = (Integer) feature.getValue(instance).getValue();
+                Integer maxValue = maxValues.get(instance);
+                if (maxValue == null || value > maxValue) {
+                    maxValues.put(instance, value);
+                }
+            }
+        }
+        inverseDocumentFrequencies = new HashMap<>();
+    }
+
     public <S> boolean putIfFeatureExists(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
         if (featureMap.containsKey(featureKey)) {
             put(instance, featureKey, featureValue);

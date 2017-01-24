@@ -1,7 +1,9 @@
 package sequence;
 
+import Model.SequenceData;
 import dal.sql.sqlite.DataAccessLayer;
 import dal.sql.sqlite.IDataAccessLayer;
+import javafx.util.Pair;
 import model.PseudoCallList;
 import model.instance.DumpInstance;
 import model.memory.Call;
@@ -24,8 +26,18 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
 
     public void generateSubSequencesToDataBase(List<DumpInstance> dumps, List<List<Call>> sequences) {
         List<PseudoCallList> pseudoSequences = toPseudoCallList(dumps, sequences);
+        Map<Sequence, List<Pair<DumpInstance, Integer>>> map = new LinkedHashMap<>();
+        generateSubSequencesToDataBase(map, new Sequence(), pseudoSequences);
         try (IDataAccessLayer dal = new DataAccessLayer()) {
-            generateSubSequencesToDataBase(dal, new Sequence(), pseudoSequences);
+            Set<SequenceData> existingSequences = new HashSet<>(dal.selectSequences());
+            List<Sequence> newSequences = new ArrayList<>();
+            for (Sequence sequence : map.keySet()) {
+                if (!existingSequences.contains(new SequenceData(sequence.toString(), sequence.size()))) {
+                    newSequences.add(sequence);
+                }
+            }
+            dal.insertSequencesBatch(newSequences);
+            dal.insertDumpSequenceRelationBatch(map);
         } catch (SQLException | IOException ex) {
             throw new RuntimeException("Encountered an Exception", ex);
         }
@@ -49,13 +61,19 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         return subSequences;
     }
 
-    private void generateSubSequencesToDataBase(IDataAccessLayer dal, Sequence prefix, List<PseudoCallList> sequences) {
+    private void generateSubSequencesToDataBase(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, Sequence prefix, List<PseudoCallList> sequences) {
         if (prefix.size() >= minimumSequenceLength) {
+//            if (!existingSequences.contains(new SequenceData(prefix.toString(), prefix.size()))) {
+//                dal.insertSequence(prefix);
+//            }
+            List<Pair<DumpInstance, Integer>> pairList = new ArrayList<>();
             List<DumpInstance> dumpInstances = extractDumpList(sequences);
-            dal.insertSequence(prefix);
             for (DumpInstance dump : new HashSet<>(dumpInstances)) {
-                dal.insertDumpSequenceRelation(dump, prefix, Collections.frequency(dumpInstances, dump));
+                int count = Collections.frequency(dumpInstances, dump);
+                pairList.add(new Pair<DumpInstance, Integer>(dump, count));
+//                dal.insertDumpSequenceRelation(dump, prefix, Collections.frequency(dumpInstances, dump));
             }
+            map.put(prefix, pairList);
         }
         if (prefix.size() == maximumSequenceLength) {
             return;
@@ -64,7 +82,7 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         for (Call call : alphaBet) {
             Sequence prefixSequence = new Sequence(prefix, call);
             List<PseudoCallList> projectedSequences = projectPseudoPostfixes(sequences, call);
-            generateSubSequencesToDataBase(dal , prefixSequence, projectedSequences);
+            generateSubSequencesToDataBase(map , prefixSequence, projectedSequences);
         }
     }
 

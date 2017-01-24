@@ -3,7 +3,12 @@ package dal.sql.sqlite;
 import Model.DumpInstanceData;
 import Model.DumpSequenceRelationData;
 import Model.SequenceData;
+import javafx.util.Pair;
+import model.data.DataTable;
+import model.feature.FeatureKey;
+import model.feature.FeatureValue;
 import model.instance.DumpInstance;
+import model.instance.Instance;
 import model.memory.Sequence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +16,9 @@ import properties.Configuration;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataAccessLayer implements IDataAccessLayer {
 
@@ -89,26 +96,25 @@ public class DataAccessLayer implements IDataAccessLayer {
     }
 
     @Override
-    public boolean insertDumps(List<DumpInstance> dumps) {
-        boolean success = true;
+    public boolean insertDumpsBatch(List<DumpInstance> dumps) {
         String sql = "INSERT INTO " + dumpsTableName
                 + "(dump_name,dump_type,dump_timestamp,dump_class,process_count,thread_count) VALUES(?,?,?,?,?,?)";
         log.info("Going to perform query" + sql + " for " + dumps.size() + " dumps.");
-        for (DumpInstance dump : dumps) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (DumpInstance dump : dumps) {
                 statement.setString(1, dump.getName());
                 statement.setString(2, dump.getType());
                 statement.setInt(3, dump.getTimestamp());
                 statement.setString(4, dump.getClassification());
                 statement.setInt(5, dump.getInstance().processCount());
                 statement.setInt(6, dump.getInstance().threadCount());
-                success &= (statement.executeUpdate() != 0);
-            } catch (SQLException ex) {
-                log.error("Encountered an error during table insertion", ex);
-                success = false;
+                statement.addBatch();
             }
+            return statement.executeBatch() != null;
+        } catch (SQLException ex) {
+            log.error("Encountered an error during table insertion", ex);
+            return false;
         }
-        return success;
     }
 
     @Override
@@ -126,22 +132,21 @@ public class DataAccessLayer implements IDataAccessLayer {
     }
 
     @Override
-    public boolean insertSequences(List<Sequence> sequences) {
-        boolean success = true;
+    public boolean insertSequencesBatch(List<Sequence> sequences) {
         String sql = "INSERT INTO " + sequenceTableName
                 + "(sequence,sequence_length) VALUES(?,?)";
         log.info("Going to perform query" + sql + " for " + sequences.size() + " sequences.");
-        for (Sequence sequence : sequences) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (Sequence sequence : sequences) {
                 statement.setString(1, sequence.toString());
                 statement.setInt(2, sequence.size());
-                success &= (statement.executeUpdate() != 0);
-            } catch (SQLException ex) {
-                log.error("Encountered an error during table insertion", ex);
-                success = false;
+                statement.addBatch();
             }
+            return statement.executeBatch() != null;
+        } catch (SQLException ex) {
+            log.error("Encountered an error during table insertion", ex);
+            return false;
         }
-        return success;
     }
 
     @Override
@@ -157,6 +162,28 @@ public class DataAccessLayer implements IDataAccessLayer {
             log.error("Encountered an error during table insertion", ex);
             return false;
         }
+    }
+
+    @Override
+    public boolean insertDumpSequenceRelationBatch(Map<Sequence, List<Pair<DumpInstance, Integer>>> map) {
+        boolean success = true;
+        String sql = "INSERT INTO " + dumpSequenceTableName
+                + "(dump_name,sequence,sequence_count) VALUES(?,?,?)";
+        for (Sequence sequence : map.keySet()) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                for (Pair<DumpInstance, Integer> dumpInfo : map.get(sequence)) {
+                    statement.setString(1, dumpInfo.getKey().getName());
+                    statement.setString(2, sequence.toString());
+                    statement.setInt(3, dumpInfo.getValue());
+                    statement.addBatch();
+                }
+                success &= statement.executeBatch() != null;
+            } catch (SQLException ex) {
+                log.error("Encountered an error during table insertion", ex);
+                success = false;
+            }
+        }
+        return success;
     }
 
     @Override
@@ -208,6 +235,28 @@ public class DataAccessLayer implements IDataAccessLayer {
         String sql = "SELECT dump_name, sequence, sequence_count FROM " + dumpSequenceTableName
                 + "\nWHERE dump_name = " + dumpName + " AND sequence = " + sequence;
         return getDumpSequenceRelationData(sql);
+    }
+
+    public DataTable getDataTable() {
+        Map<String, Instance> instanceMap = getInstanceMap();
+        DataTable table = new DataTable();
+        for (SequenceData sequenceData : selectSequences()) {
+            FeatureKey<String, Integer> key = new FeatureKey<>(sequenceData.getSequence(), 0);
+            for (DumpSequenceRelationData dumpSequenceRelationData : selectDumpSequenceRelationBySequence(sequenceData.getSequence())) {
+                FeatureValue<Integer> value = new FeatureValue<>(dumpSequenceRelationData.getCount());
+                table.put(instanceMap.get(dumpSequenceRelationData.getDumpName()), key, value);
+            }
+        }
+        return table;
+    }
+
+    private Map<String, Instance> getInstanceMap() {
+        List<DumpInstanceData> dumpInstanceDataList = selectDumps();
+        Map<String, Instance> dumpInstanceMap = new LinkedHashMap<>();
+        for (DumpInstanceData data : dumpInstanceDataList) {
+            dumpInstanceMap.put(data.getDumpName(), data);
+        }
+        return dumpInstanceMap;
     }
 
     private List<DumpSequenceRelationData> getDumpSequenceRelationData(String sql) {

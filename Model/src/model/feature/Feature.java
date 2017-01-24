@@ -3,16 +3,13 @@ package model.feature;
 import model.data.DataTable;
 import model.instance.Instance;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Feature <S> {
 
     private final FeatureKey<?, S> key;
     private final Map<Instance, FeatureValue<S>> values;
-    private final DataTable dataTable;
+    private DataTable dataTable;
 
     public Feature(FeatureKey<?, S> key, DataTable dataTable) {
         this.key = key;
@@ -33,6 +30,14 @@ public class Feature <S> {
             return (values.containsKey(instance)) ? BinaryFeatureValue.TRUE_VALUE : BinaryFeatureValue.FALSE_VALUE;
         }
         return getValue(instance);
+    }
+
+    public Set<FeatureValue<S>> getAllValues() {
+        return new LinkedHashSet<>(values.values());
+    }
+
+    public Set<Instance> getAllConcritInstances() {
+        return values.keySet();
     }
 
     public List<Instance> getInstancesOfClassification(String classification) {
@@ -63,5 +68,9 @@ public class Feature <S> {
 
     public DataTable getDataTable() {
         return dataTable;
+    }
+
+    public void setDataTable(DataTable dataTable) {
+        this.dataTable = dataTable;
     }
 }

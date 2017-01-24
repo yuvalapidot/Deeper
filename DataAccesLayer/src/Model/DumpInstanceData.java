@@ -1,11 +1,14 @@
 package Model;
 
+import model.instance.Instance;
+import model.instance.InstanceSetType;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DumpInstanceData {
+public class DumpInstanceData extends Instance<String> {
 
     private String dumpName;
     private String dumpType;
@@ -15,6 +18,7 @@ public class DumpInstanceData {
     private int threadCount;
 
     public DumpInstanceData(String dumpName, String dumpType, int dumpTimestamp, String dumpClass, int processCount, int threadCount) {
+        super(dumpName, InstanceSetType.TRAIN_SET, dumpClass);
         this.dumpName = dumpName;
         this.dumpType = dumpType;
         this.dumpTimestamp = dumpTimestamp;
@@ -82,6 +86,11 @@ public class DumpInstanceData {
 
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
+    }
+
+    @Override
+    public String getName() {
+        return dumpName;
     }
 
     @Override
