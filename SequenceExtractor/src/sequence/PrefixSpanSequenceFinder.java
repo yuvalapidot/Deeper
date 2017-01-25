@@ -19,15 +19,15 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         super(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
     }
 
-    public Map<Sequence, List<DumpInstance>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences) {
+    public void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<DumpInstance> dumps, List<List<Call>> sequences, boolean saveToDataBase) {
         List<PseudoCallList> pseudoSequences = toPseudoCallList(dumps, sequences);
-        return generateSubSequences(pseudoSequences, new Sequence());
+        generateSubSequences(map, new Sequence(), pseudoSequences);
+        if (saveToDataBase) {
+            putInDataBase(map);
+        }
     }
 
-    public void generateSubSequencesToDataBase(List<DumpInstance> dumps, List<List<Call>> sequences) {
-        List<PseudoCallList> pseudoSequences = toPseudoCallList(dumps, sequences);
-        Map<Sequence, List<Pair<DumpInstance, Integer>>> map = new LinkedHashMap<>();
-        generateSubSequencesToDataBase(map, new Sequence(), pseudoSequences);
+    private void putInDataBase(Map<Sequence, List<Pair<DumpInstance, Integer>>> map) {
         try (IDataAccessLayer dal = new DataAccessLayer()) {
             Set<SequenceData> existingSequences = new HashSet<>(dal.selectSequences());
             List<Sequence> newSequences = new ArrayList<>();
@@ -43,37 +43,18 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         }
     }
 
-    private Map<Sequence, List<DumpInstance>> generateSubSequences(List<PseudoCallList> sequences, Sequence prefix) {
-        Map<Sequence, List<DumpInstance>> subSequences = new LinkedHashMap<>();
-        if (prefix.size() == maximumSequenceLength) {
-            subSequences.put(prefix, extractDumpList(sequences));
-            return subSequences;
-        }
-        Set<Call> alphaBet = getAlphaBet(sequences);
-        for (Call call : alphaBet) {
-            Sequence prefixSequence = new Sequence(prefix, call);
-            List<PseudoCallList> projectedSequences = projectPseudoPostfixes(sequences, call);
-            subSequences.putAll(generateSubSequences(projectedSequences, prefixSequence));
-        }
+    private void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, Sequence prefix, List<PseudoCallList> sequences) {
         if (prefix.size() >= minimumSequenceLength) {
-            subSequences.put(prefix, extractDumpList(sequences));
-        }
-        return subSequences;
-    }
-
-    private void generateSubSequencesToDataBase(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, Sequence prefix, List<PseudoCallList> sequences) {
-        if (prefix.size() >= minimumSequenceLength) {
-//            if (!existingSequences.contains(new SequenceData(prefix.toString(), prefix.size()))) {
-//                dal.insertSequence(prefix);
-//            }
-            List<Pair<DumpInstance, Integer>> pairList = new ArrayList<>();
+            List<Pair<DumpInstance, Integer>> pairList;
+            if ((pairList = map.get(prefix)) == null) {
+                pairList = new ArrayList<>();
+                map.put(prefix, pairList);
+            }
             List<DumpInstance> dumpInstances = extractDumpList(sequences);
             for (DumpInstance dump : new HashSet<>(dumpInstances)) {
                 int count = Collections.frequency(dumpInstances, dump);
-                pairList.add(new Pair<DumpInstance, Integer>(dump, count));
-//                dal.insertDumpSequenceRelation(dump, prefix, Collections.frequency(dumpInstances, dump));
+                pairList.add(new Pair<>(dump, count));
             }
-            map.put(prefix, pairList);
         }
         if (prefix.size() == maximumSequenceLength) {
             return;
@@ -82,7 +63,7 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         for (Call call : alphaBet) {
             Sequence prefixSequence = new Sequence(prefix, call);
             List<PseudoCallList> projectedSequences = projectPseudoPostfixes(sequences, call);
-            generateSubSequencesToDataBase(map , prefixSequence, projectedSequences);
+            generateSubSequences(map , prefixSequence, projectedSequences);
         }
     }
 

@@ -1,5 +1,6 @@
 package sequence;
 
+import javafx.util.Pair;
 import model.instance.DumpInstance;
 import model.memory.Call;
 import model.memory.Sequence;
@@ -9,7 +10,11 @@ import java.util.Map;
 
 public interface ISequenceFinder {
 
-    public Map<Sequence, List<DumpInstance>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences);
+    public void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<DumpInstance> dumps, List<List<Call>> sequences, boolean saveToDataBase);
 
-    public void generateSubSequencesToDataBase(List<DumpInstance> dumps, List<List<Call>> sequences);
+    public void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<DumpInstance> dumps, List<List<Call>> sequences);
+
+    public Map<Sequence, List<Pair<DumpInstance, Integer>>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences, boolean saveToDataBase);
+
+    public Map<Sequence, List<Pair<DumpInstance, Integer>>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences);
 }

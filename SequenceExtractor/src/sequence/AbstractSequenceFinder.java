@@ -1,5 +1,6 @@
 package sequence;
 
+import javafx.util.Pair;
 import model.PseudoCallList;
 import model.instance.DumpInstance;
 import model.memory.Call;
@@ -13,6 +14,20 @@ abstract class AbstractSequenceFinder implements ISequenceFinder {
     int maximumSupport;
     int minimumSequenceLength;
     int maximumSequenceLength;
+
+    public void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<DumpInstance> dumps, List<List<Call>> sequences) {
+        generateSubSequences(map, dumps, sequences, false);
+    }
+
+    public Map<Sequence, List<Pair<DumpInstance, Integer>>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences, boolean saveToDataBase) {
+        Map<Sequence, List<Pair<DumpInstance, Integer>>> map = new LinkedHashMap<>();
+        generateSubSequences(map, dumps, sequences, saveToDataBase);
+        return map;
+    }
+
+    public Map<Sequence, List<Pair<DumpInstance, Integer>>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences) {
+        return generateSubSequences(dumps, sequences, false);
+    }
 
     AbstractSequenceFinder(int minimumSupport, int maximumSupport, int minimumSequenceLength, int maximumSequenceLength) {
         this.minimumSupport = minimumSupport;

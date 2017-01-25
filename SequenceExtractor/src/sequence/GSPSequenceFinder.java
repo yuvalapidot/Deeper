@@ -1,10 +1,10 @@
 package sequence;
 
+import javafx.util.Pair;
 import model.PseudoCallList;
 import model.instance.DumpInstance;
 import model.memory.Call;
 import model.memory.Sequence;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,7 +17,8 @@ public class GSPSequenceFinder extends AbstractSequenceFinder {
         super(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
     }
 
-    public Map<Sequence, List<DumpInstance>> generateSubSequences(List<DumpInstance> dumps, List<List<Call>> sequences) {
+    public void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<DumpInstance> dumps, List<List<Call>> sequences, boolean saveToDataBase) {
+        // TODO - Fix according to new method signature.
         List<PseudoCallList> pseudoSequences = toPseudoCallList(dumps, sequences);
         Set<Call> alphaBet = getAlphaBet(pseudoSequences);
         Map<Sequence, List<DumpInstance>> subSequences = new LinkedHashMap<>();
@@ -38,12 +39,6 @@ public class GSPSequenceFinder extends AbstractSequenceFinder {
             }
             formerLayer = nextLayer;
         }
-        return subSequences;
-    }
-
-    @Override
-    public void generateSubSequencesToDataBase(List<DumpInstance> dumps, List<List<Call>> sequences) {
-        throw new NotImplementedException();
     }
 
     private int maximumSequenceLength(List<PseudoCallList> sequences) {
