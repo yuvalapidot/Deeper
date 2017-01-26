@@ -74,7 +74,8 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
         int i = 0;
         for (Set<DumpInstance> dumpBatch : getDumpsBatches()) {
             ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
-            System.out.println("Starting on " + i + " batch. Time = " + new Date().getTime());
+            System.out.println("Starting on batch " + i + ".");
+            long startTime = new Date().getTime();
             Map<Sequence, List<Pair<DumpInstance, Integer>>> batchSequences = getAllDumpsSequences(dumpBatch, finder, false);
             for (Sequence sequence : batchSequences.keySet()) {
                 FeatureKey<Sequence, Integer> featureKey = new FeatureKey<>(sequence, 0);
@@ -83,7 +84,7 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
                     table.put(dumpInfo.getKey(), featureKey, featureValue);
                 }
             }
-            System.out.println("End on " + i + " batch. Time = " + new Date().getTime() + ". Number of sequences = " + batchSequences.size());
+            System.out.println("End on " + i + " batch. Time = " + (new Date().getTime() - startTime) + ". Number of sequences = " + batchSequences.size());
             i++;
         }
     }
