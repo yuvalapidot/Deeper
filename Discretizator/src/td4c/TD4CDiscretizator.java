@@ -76,7 +76,7 @@ public class TD4CDiscretizator {
     private DiscreteFeature createDiscreteFeature(Feature<Integer> feature, List<Integer> cutoffs) {
         DiscreteFeature discreteFeature = new DiscreteFeature(new FeatureKey<Object, Integer>(feature.getKey().getKey(), 0), feature.getDataTable());
         discreteFeature.setCutoffs(cutoffs);
-        discreteFeature.setDistanceMeasure(evaluateCutoffs(feature, cutoffs));
+        discreteFeature.setRank(evaluateCutoffs(feature, cutoffs));
         for (Instance instance : feature.getAllConcritInstances()) {
             Integer value = feature.getValue(instance).getValue();
             int discreteIndex = 0;

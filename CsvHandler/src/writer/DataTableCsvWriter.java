@@ -74,7 +74,7 @@ public class DataTableCsvWriter {
             boolean shouldBreak = false;
             if (feature instanceof DiscreteFeature) {
                 DiscreteFeature dFeature = (DiscreteFeature) feature;
-                if (dFeature.getDistanceMeasure() < featureThreshold) {
+                if (dFeature.getRank() < featureThreshold) {
                     shouldBreak = true;
                 }
             }
@@ -102,7 +102,7 @@ public class DataTableCsvWriter {
                     boolean shouldBreak = false;
                     if (feature instanceof DiscreteFeature) {
                         DiscreteFeature dFeature = (DiscreteFeature) feature;
-                        if (dFeature.getDistanceMeasure() < featureThreshold) {
+                        if (dFeature.getRank() < featureThreshold) {
                             shouldBreak = true;
                         }
                     }

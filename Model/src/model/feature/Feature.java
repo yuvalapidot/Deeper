@@ -17,6 +17,12 @@ public class Feature <S> {
         values = new LinkedHashMap<>();
     }
 
+    public Feature(Feature feature) {
+        this.key = feature.key;
+        this.values = feature.values;
+        this.dataTable = feature.dataTable;
+    }
+
     public FeatureValue<S> getValue(Instance instance) {
         FeatureValue<S> value = values.get(instance);
         if (value == null) {
