@@ -3,10 +3,10 @@ package model.instance;
 public abstract class Instance<T> {
 
     protected final T instance;
-    private InstanceSetType setType = InstanceSetType.TRAIN_SET;
-    private String classification = "Unknown";
-    private String type = "UNKNOWN";
-    private int timestamp = 0;
+    protected InstanceSetType setType = InstanceSetType.TRAIN_SET;
+    protected String classification = "Unknown";
+    protected String type = "UNKNOWN";
+    protected int timestamp = 0;
 
     public Instance(T instance, InstanceSetType setType, String classification) {
         this.instance = instance;

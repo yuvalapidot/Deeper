@@ -5,6 +5,7 @@ import model.data.DataTable;
 import model.feature.FeatureKey;
 import model.feature.FeatureValue;
 import model.instance.DumpInstance;
+import model.instance.LightweightDumpInstance;
 import model.memory.Call;
 import model.memory.Process;
 import model.memory.Sequence;
@@ -78,10 +79,10 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
             long startTime = new Date().getTime();
             Map<Sequence, List<Pair<DumpInstance, Integer>>> batchSequences = getAllDumpsSequences(dumpBatch, finder, false);
             for (Sequence sequence : batchSequences.keySet()) {
-                FeatureKey<Sequence, Integer> featureKey = new FeatureKey<>(sequence, 0);
+                FeatureKey<String, Integer> featureKey = new FeatureKey<>(sequence.toString(), 0);
                 for (Pair<DumpInstance, Integer> dumpInfo : batchSequences.get(sequence)) {
                     FeatureValue<Integer> featureValue = new FeatureValue<>(dumpInfo.getValue());
-                    table.put(dumpInfo.getKey(), featureKey, featureValue);
+                    table.put(new LightweightDumpInstance(dumpInfo.getKey()), featureKey, featureValue);
                 }
             }
             System.out.println("End on " + i + " batch. Time = " + (new Date().getTime() - startTime) + ". Number of sequences = " + batchSequences.size());
