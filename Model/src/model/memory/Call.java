@@ -2,11 +2,16 @@ package model.memory;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Call {
 
     public static final int ARGS_COUNT = 4;
     private static final boolean CASE_SENSITIVE = false;
+
+    private static Map<Call, Call> lookupTable = new HashMap<>();
 
     private String childSp;
     private String returnAddress;
@@ -22,6 +27,21 @@ public class Call {
 
     public Call() {
         args = new String[ARGS_COUNT];
+    }
+
+    public static Call instance(Call call) {
+        Call existingCall = lookupTable.putIfAbsent(call, call);
+        return existingCall == null ? call : existingCall;
+    }
+
+    public static Call instance() {
+        Call call = new Call();
+        return instance(call);
+    }
+
+    public static Call instance(String childSp, String returnAddress, String[] args, String callSite) {
+        Call call = new Call(childSp, returnAddress, args, callSite);
+        return instance(call);
     }
 
     public String getChildSp() {

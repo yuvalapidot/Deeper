@@ -25,12 +25,6 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         if (saveToDataBase) {
             putInDataBase(map);
         }
-//        ObjectMapper mapper = new ObjectMapper();
-//        try {
-//            mapper.writeValue(new File("try.json"), map);
-//        } catch (IOException e) {
-//            System.out.println("Json writing did not work");
-//        }
     }
 
     private void putInDataBase(Map<Sequence, List<Pair<DumpInstance, Integer>>> map) {
@@ -73,36 +67,36 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         }
     }
 
-    private void generateSubSequencesIter(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<PseudoCallList> sequences) {
-        Sequence prefix = new Sequence();
-        Queue<Pair<Sequence, List<PseudoCallList>>> queue = new LinkedList<>();
-        queue.add(new Pair<>(prefix, sequences));
-        while (!queue.isEmpty()) {
-            Pair<Sequence, List<PseudoCallList>> pair = queue.poll();
-            prefix = pair.getKey();
-            sequences = pair.getValue();
-            if (prefix.size() >= minimumSequenceLength) {
-                List<Pair<DumpInstance, Integer>> pairList;
-                if ((pairList = map.get(prefix)) == null) {
-                    pairList = new ArrayList<>();
-                    map.put(prefix, pairList);
-                }
-                List<DumpInstance> dumpInstances = extractDumpList(sequences);
-                for (DumpInstance dump : new HashSet<>(dumpInstances)) {
-                    int count = Collections.frequency(dumpInstances, dump);
-                    pairList.add(new Pair<>(dump, count));
-                }
-            }
-            if (prefix.size() < maximumSequenceLength) {
-                Set<Call> alphaBet = getAlphaBet(sequences);
-                for (Call call : alphaBet) {
-                    Sequence prefixSequence = new Sequence(prefix, call);
-                    List<PseudoCallList> projectedSequences = projectPseudoPostfixes(sequences, call);
-                    queue.add(new Pair<>(prefixSequence, projectedSequences));
-                }
-            }
-        }
-    }
+//    private void generateSubSequencesIter(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<PseudoCallList> sequences) {
+//        Sequence prefix = new Sequence();
+//        Queue<Pair<Sequence, List<PseudoCallList>>> queue = new LinkedList<>();
+//        queue.add(new Pair<>(prefix, sequences));
+//        while (!queue.isEmpty()) {
+//            Pair<Sequence, List<PseudoCallList>> pair = queue.poll();
+//            prefix = pair.getKey();
+//            sequences = pair.getValue();
+//            if (prefix.size() >= minimumSequenceLength) {
+//                List<Pair<DumpInstance, Integer>> pairList;
+//                if ((pairList = map.get(prefix)) == null) {
+//                    pairList = new ArrayList<>();
+//                    map.put(prefix, pairList);
+//                }
+//                List<DumpInstance> dumpInstances = extractDumpList(sequences);
+//                for (DumpInstance dump : new HashSet<>(dumpInstances)) {
+//                    int count = Collections.frequency(dumpInstances, dump);
+//                    pairList.add(new Pair<>(dump, count));
+//                }
+//            }
+//            if (prefix.size() < maximumSequenceLength) {
+//                Set<Call> alphaBet = getAlphaBet(sequences);
+//                for (Call call : alphaBet) {
+//                    Sequence prefixSequence = new Sequence(prefix, call);
+//                    List<PseudoCallList> projectedSequences = projectPseudoPostfixes(sequences, call);
+//                    queue.add(new Pair<>(prefixSequence, projectedSequences));
+//                }
+//            }
+//        }
+//    }
 
     private List<PseudoCallList> projectPseudoPostfixes(List<PseudoCallList> sequences, Call call) {
         List<PseudoCallList> projectedSequences = new ArrayList<>(sequences.size());

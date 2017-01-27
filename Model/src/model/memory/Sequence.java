@@ -1,11 +1,15 @@
 package model.memory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Sequence {
 
     private List<Call> calls;
+
+    private static Map<Sequence, Sequence> lookupTable = new HashMap<>();
 
     public Sequence() {
         calls = new ArrayList<>();
@@ -13,7 +17,7 @@ public class Sequence {
 
     public Sequence(Call call) {
         this();
-        calls.add(call);
+        calls.add(Call.instance(call));
     }
 
     public Sequence(Sequence sequence) {
@@ -22,12 +26,40 @@ public class Sequence {
     }
 
     public Sequence(List<Call> calls) {
-        this.calls = calls;
+        this();
+        for (Call call : calls) {
+            this.calls.add(Call.instance(call));
+        }
     }
 
     public Sequence(Sequence sequence, Call call) {
         this(sequence);
-        calls.add(call);
+        calls.add(Call.instance(Call.instance(call)));
+    }
+
+    public static Sequence instance(Sequence sequence) {
+        Sequence existingSequence = lookupTable.putIfAbsent(sequence, sequence);
+        return existingSequence == null ? sequence : existingSequence;
+    }
+
+    public static Sequence instance() {
+        Sequence sequence = new Sequence();
+        return instance(sequence);
+    }
+
+    public static Sequence instance(Call call) {
+        Sequence sequence = new Sequence(call);
+        return instance(sequence);
+    }
+
+    public static Sequence instance(List<Call> calls) {
+        Sequence sequence = new Sequence(calls);
+        return instance(sequence);
+    }
+
+    public static Sequence instance(Sequence sequence, Call call) {
+        Sequence newSequence = new Sequence(sequence, call);
+        return instance(newSequence);
     }
 
     public void addCall(Call call) {

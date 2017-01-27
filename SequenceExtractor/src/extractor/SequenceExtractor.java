@@ -55,7 +55,7 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
 //                }
 //            }
 //        }
-        getAllSequences(table);;
+        getAllSequences(table);
     }
 
     private List<Map<Sequence, List<Pair<DumpInstance, Integer>>>> getAllSequences(boolean saveToDataBase) {
