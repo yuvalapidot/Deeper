@@ -5,8 +5,6 @@ import Model.DumpSequenceRelationData;
 import Model.SequenceData;
 import javafx.util.Pair;
 import model.data.DataTable;
-import model.feature.FeatureKey;
-import model.feature.FeatureValue;
 import model.instance.DumpInstance;
 import model.instance.Instance;
 import model.memory.Sequence;
@@ -241,9 +239,9 @@ public class DataAccessLayer implements IDataAccessLayer {
         Map<String, Instance> instanceMap = getInstanceMap();
         DataTable table = new DataTable();
         for (SequenceData sequenceData : selectSequences()) {
-            FeatureKey<String, Integer> key = new FeatureKey<>(sequenceData.getSequence(), 0);
+            String key = sequenceData.getSequence();
             for (DumpSequenceRelationData dumpSequenceRelationData : selectDumpSequenceRelationBySequence(sequenceData.getSequence())) {
-                FeatureValue<Integer> value = new FeatureValue<>(dumpSequenceRelationData.getCount());
+                Integer value = dumpSequenceRelationData.getCount();
                 table.put(instanceMap.get(dumpSequenceRelationData.getDumpName()), key, value);
             }
         }

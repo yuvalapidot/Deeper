@@ -1,8 +1,6 @@
 package reader;
 
 import model.data.DataTable;
-import model.feature.FeatureKey;
-import model.feature.FeatureValue;
 import model.instance.Instance;
 import model.instance.StringInstance;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +30,7 @@ public class DataTableCsvReader {
                 String[] instanceValueStrings = line.split(String.valueOf(CSV_DELIMITER));
                 Instance instance = new StringInstance(request.isNamesOnFirstColumn() ? instanceValueStrings[0] : "Instance " + instanceCount);
                 for (int i = request.isNamesOnFirstColumn() ? 1 : 0; i < Math.min(featureKeyNames.length, instanceValueStrings.length); i++) {
-                    dataTable.put(instance, new FeatureKey<>(featureKeyNames[i]), new FeatureValue<>(instanceValueStrings[i]));
+                    dataTable.put(instance, featureKeyNames[i], instanceValueStrings[i]);
                 }
             }
         } catch (FileNotFoundException e) {

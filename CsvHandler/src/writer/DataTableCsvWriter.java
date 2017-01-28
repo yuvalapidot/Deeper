@@ -3,8 +3,6 @@ package writer;
 import model.data.DataTable;
 import model.feature.DiscreteFeature;
 import model.feature.Feature;
-import model.feature.FeatureKey;
-import model.feature.FeatureValue;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
 import org.apache.logging.log4j.LogManager;
@@ -110,15 +108,15 @@ public class DataTableCsvWriter {
                         shouldBreak = true;
                     }
                     if (shouldBreak) {
-                        feature = table.getFeature(new FeatureKey<>("Class", "Unknown"));
+                        feature = table.getFeature("Class");
                     }
                     if (addSeparator) {
                         builder.append(CSV_DELIMITER);
                     } else {
                         addSeparator = true;
                     }
-                    FeatureValue value =  getValue(instance, feature, representation);
-                    if (value.getValue() != null) {
+                    Object value =  getValue(instance, feature, representation);
+                    if (value != null) {
                         builder.append(csvString(value));
                     }
                     if (shouldBreak) {
@@ -143,7 +141,7 @@ public class DataTableCsvWriter {
         }
         List<Feature> classFeatures = new ArrayList<>();
         for (Feature feature : features) {
-            if (feature.getKey().getKey().equals("Class")) {
+            if (feature.getKey().equals("Class")) {
                 classFeatures.add(feature);
             }
         }
@@ -158,7 +156,7 @@ public class DataTableCsvWriter {
                 } else {
                     addSeparator = true;
                 }
-                if (feature.getKey().getKey().equals("Class")) {
+                if (feature.getKey().equals("Class")) {
                     builder.append(csvString(feature.getKey()));
                     break;
                 }
@@ -182,11 +180,11 @@ public class DataTableCsvWriter {
                         } else {
                             addSeparator = true;
                         }
-                        FeatureValue value =  getValue(instance, feature, representation);
-                        if (value.getValue() != null) {
+                        Object value =  getValue(instance, feature, representation);
+                        if (value != null) {
                             builder.append(csvString(value));
                         }
-                        if (feature.getKey().getKey().equals("Class")) {
+                        if (feature.getKey().equals("Class")) {
                             break;
                         }
                     }
@@ -197,7 +195,7 @@ public class DataTableCsvWriter {
         }
     }
 
-    private FeatureValue getValue(Instance instance, Feature feature, CsvNumberRepresentation representation) {
+    private Object getValue(Instance instance, Feature feature, CsvNumberRepresentation representation) {
         DataTable table = feature.getDataTable();
         if (representation.equals(CsvNumberRepresentation.INTEGER_REPRESENTATION)) {
             return feature.getValue(instance);

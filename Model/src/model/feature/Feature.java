@@ -7,39 +7,42 @@ import java.util.*;
 
 public class Feature <S> {
 
-    private final FeatureKey<?, S> key;
-    private final Map<Instance, FeatureValue<S>> values;
+    private final Object key;
+    private final Map<Instance, S> values;
+    private S defaultValue;
     private DataTable dataTable;
 
-    public Feature(FeatureKey<?, S> key, DataTable dataTable) {
+    public Feature(Object key, S defaultValue, DataTable dataTable) {
         this.key = key;
+        this.defaultValue = defaultValue;
         this.dataTable = dataTable;
         values = new LinkedHashMap<>();
     }
 
-    public Feature(Feature feature) {
+    public Feature(Feature<S> feature) {
         this.key = feature.key;
         this.values = feature.values;
+        this.defaultValue = feature.defaultValue;
         this.dataTable = feature.dataTable;
     }
 
-    public FeatureValue<S> getValue(Instance instance) {
-        FeatureValue<S> value = values.get(instance);
+    public S getValue(Instance instance) {
+        S value = values.get(instance);
         if (value == null) {
-            return new FeatureValue<>(key.getDefaultValue());
+            return defaultValue;
         }
         return value;
     }
 
-    public FeatureValue getBinaryValue(Instance instance) {
-        if (key.getDefaultValue() instanceof Number) {
-            return (values.containsKey(instance)) ? BinaryFeatureValue.TRUE_VALUE : BinaryFeatureValue.FALSE_VALUE;
+    public Integer getBinaryValue(Instance instance) {
+        if (getValue(instance) != null) {
+            return 1;
         }
-        return getValue(instance);
+        return 0;
     }
 
-    public Set<FeatureValue<S>> getAllValues() {
-        return new LinkedHashSet<>(values.values());
+    public Collection<S> getAllValues() {
+        return values.values();
     }
 
     public Set<Instance> getAllConcritInstances() {
@@ -56,11 +59,11 @@ public class Feature <S> {
         return instances;
     }
 
-    public void setValue(Instance instance, FeatureValue<S> value) {
+    public void setValue(Instance instance, S value) {
         values.put(instance, value);
     }
 
-    public FeatureKey<?, S> getKey() {
+    public Object getKey() {
         return key;
     }
 

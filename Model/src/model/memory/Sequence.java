@@ -11,30 +11,30 @@ public class Sequence {
 
     private static Map<Sequence, Sequence> lookupTable = new HashMap<>();
 
-    public Sequence() {
+    private Sequence() {
         calls = new ArrayList<>();
     }
 
-    public Sequence(Call call) {
+    private Sequence(Call call) {
         this();
         calls.add(Call.instance(call));
     }
 
-    public Sequence(Sequence sequence) {
+    private Sequence(Sequence sequence) {
         this();
         calls.addAll(sequence.calls);
     }
 
-    public Sequence(List<Call> calls) {
+    private Sequence(List<Call> calls) {
         this();
         for (Call call : calls) {
             this.calls.add(Call.instance(call));
         }
     }
 
-    public Sequence(Sequence sequence, Call call) {
+    private Sequence(Sequence sequence, Call call) {
         this(sequence);
-        calls.add(Call.instance(Call.instance(call)));
+        calls.add(Call.instance(call));
     }
 
     public static Sequence instance(Sequence sequence) {
@@ -105,5 +105,13 @@ public class Sequence {
     @Override
     public int hashCode() {
         return calls.hashCode();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (lookupTable.get(this) == this) {
+            lookupTable.remove(this);
+        }
     }
 }

@@ -18,7 +18,7 @@ public class Call {
     private String[] args;
     private String callSite;
 
-    public Call(String childSp, String returnAddress, String[] args, String callSite) {
+    private Call(String childSp, String returnAddress, String[] args, String callSite) {
         this.childSp = childSp;
         this.returnAddress = returnAddress;
         this.args = args;
@@ -103,6 +103,14 @@ public class Call {
             return CASE_SENSITIVE ? callSiteName : callSiteName.toLowerCase();
         } catch (Exception e) {
             return CASE_SENSITIVE ? callSite : callSite.toLowerCase();
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (lookupTable.get(this) == this) {
+            lookupTable.remove(this);
         }
     }
 }

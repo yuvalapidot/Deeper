@@ -1,6 +1,18 @@
 package model.instance;
 
+import model.memory.Call;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class Instance<T> {
+
+    private static Map<Instance, Instance> lookupTable = new HashMap<>();
+
+    public static Instance instance(Instance instance) {
+        Instance existingInstance = lookupTable.putIfAbsent(instance, instance);
+        return existingInstance == null ? instance : existingInstance;
+    }
 
     protected final T instance;
     protected InstanceSetType setType = InstanceSetType.TRAIN_SET;
@@ -78,5 +90,11 @@ public abstract class Instance<T> {
         int result = instance.hashCode();
         result = 31 * result + setType.hashCode();
         return result;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        lookupTable.remove(this);
     }
 }

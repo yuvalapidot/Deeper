@@ -21,7 +21,7 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
 
     public void generateSubSequences(Map<Sequence, List<Pair<DumpInstance, Integer>>> map, List<DumpInstance> dumps, List<List<Call>> sequences, boolean saveToDataBase) {
         List<PseudoCallList> pseudoSequences = toPseudoCallList(dumps, sequences);
-        generateSubSequences(map, new Sequence(), pseudoSequences);
+        generateSubSequences(map, Sequence.instance(), pseudoSequences);
         if (saveToDataBase) {
             putInDataBase(map);
         }
@@ -61,7 +61,7 @@ public class PrefixSpanSequenceFinder extends AbstractSequenceFinder {
         }
         Set<Call> alphaBet = getAlphaBet(sequences);
         for (Call call : alphaBet) {
-            Sequence prefixSequence = new Sequence(prefix, call);
+            Sequence prefixSequence = Sequence.instance(prefix, call);
             List<PseudoCallList> projectedSequences = projectPseudoPostfixes(sequences, call);
             generateSubSequences(map , prefixSequence, projectedSequences);
         }

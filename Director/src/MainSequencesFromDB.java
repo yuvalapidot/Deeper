@@ -38,9 +38,9 @@ public class MainSequencesFromDB {
             }
         }
         TD4CDiscretizator discretizator = new TD4CDiscretizator(table.getInstances(), new KullbackLeiblerDistance());
-        discretizator.discrete(table, 3);
+        discretizator.discrete(table, 3, 1);
         DataTableCsvWriter writer = new DataTableCsvWriter();
-        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.1));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 1));
     }
 
 }

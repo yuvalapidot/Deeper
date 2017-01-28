@@ -20,7 +20,7 @@ public class DumpInstanceCreator {
     public DumpInstance create(Dump dump) {
         if (dump.getName().contains(identification) & counter < totalCount) {
             counter++;
-            DumpInstance instance = new DumpInstance(dump, (counter <= totalCount * trainSetPercentage / 100) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET, classification);
+            DumpInstance instance = DumpInstance.instance(dump, (counter <= totalCount * trainSetPercentage / 100) ? InstanceSetType.TRAIN_SET : InstanceSetType.TEST_SET, classification);
             instance.setType(identification);
             return instance;
         }

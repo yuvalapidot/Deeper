@@ -1,9 +1,17 @@
 package model.feature;
 
+import model.memory.Sequence;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 public class FeatureKey <T, S> {
 
     private final T key;
     private S defaultValue = null;
+
+    private static Map<FeatureKey, FeatureKey> lookupTable = new HashMap<>();
 
     public FeatureKey(T key) {
         this.key = key;
@@ -12,6 +20,11 @@ public class FeatureKey <T, S> {
     public FeatureKey(T key, S defaultValue) {
         this.key = key;
         this.defaultValue = defaultValue;
+    }
+
+    public static FeatureKey instance(FeatureKey featureKey) {
+        FeatureKey existingFeatureKey = lookupTable.putIfAbsent(featureKey, featureKey);
+        return existingFeatureKey == null ? featureKey : existingFeatureKey;
     }
 
     public T getKey() {

@@ -24,7 +24,7 @@ public class Ranker {
         List<RankedFeature> rankedFeatures = new ArrayList<>();
         Feature classFeature = null;
         for (Feature feature : table.getFeatures()) {
-            if (feature.getKey().getKey().equals("Class")) {
+            if (feature.getKey().equals("Class")) {
                 classFeature = feature;
             } else {
                 RankedFeature rankedFeature = rank(feature, table.getInstances());

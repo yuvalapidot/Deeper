@@ -3,8 +3,6 @@ package td4c;
 import model.data.DataTable;
 import model.feature.DiscreteFeature;
 import model.feature.Feature;
-import model.feature.FeatureKey;
-import model.feature.FeatureValue;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
 import td4c.measures.IDistanceMeasure;
@@ -29,17 +27,19 @@ public class TD4CDiscretizator {
         }
     }
 
-    public DataTable discrete(DataTable table, int bins) {
+    public DataTable discrete(DataTable table, int bins, double threshold) {
         DataTable discreteTable = new DataTable();
         List<DiscreteFeature> discreteFeatures = new ArrayList<>();
         Feature classFeature = null;
         for (Feature feature : table.getFeatures()) {
-            if (feature.getKey().getKey().equals("Class")) {
+            if (feature.getKey().equals("Class")) {
                 classFeature = feature;
             } else {
                 DiscreteFeature discreteFeature = discrete(feature, bins);
-                discreteFeature.setDataTable(discreteTable);
-                discreteFeatures.add(discreteFeature);
+                if (discreteFeature.getRank() >= threshold) {
+//                    discreteFeature.setDataTable(discreteTable);
+                    discreteFeatures.add(discreteFeature);
+                }
             }
         }
         discreteFeatures.sort(DiscreteFeature::compareTo);
@@ -74,11 +74,11 @@ public class TD4CDiscretizator {
     }
 
     private DiscreteFeature createDiscreteFeature(Feature<Integer> feature, List<Integer> cutoffs) {
-        DiscreteFeature discreteFeature = new DiscreteFeature(new FeatureKey<Object, Integer>(feature.getKey().getKey(), 0), feature.getDataTable());
+        DiscreteFeature discreteFeature = new DiscreteFeature(feature.getKey(), 0, null);
         discreteFeature.setCutoffs(cutoffs);
         discreteFeature.setRank(evaluateCutoffs(feature, cutoffs));
         for (Instance instance : feature.getAllConcritInstances()) {
-            Integer value = feature.getValue(instance).getValue();
+            Integer value = feature.getValue(instance);
             int discreteIndex = 0;
             for (Integer cutoff : cutoffs) {
                 if (value < cutoff) {
@@ -86,7 +86,7 @@ public class TD4CDiscretizator {
                 }
                 discreteIndex++;
             }
-            discreteFeature.setValue(instance, new FeatureValue<>(discreteIndex));
+            discreteFeature.setValue(instance, discreteIndex);
         }
         return discreteFeature;
     }
@@ -105,7 +105,7 @@ public class TD4CDiscretizator {
                 if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
                     int cutoffIndex = 0;
                     for (Integer cutoff : sortedCutoffs) {
-                        if (feature.getValue(instance).getValue() < cutoff) {
+                        if (feature.getValue(instance) < cutoff) {
                             break;
                         }
                         cutoffIndex++;
@@ -120,8 +120,8 @@ public class TD4CDiscretizator {
 
     private List<Integer> getOptionalCutoffs(Feature<Integer> feature) {
         List<Integer> optionalCutoffs = new ArrayList<>();
-        for (FeatureValue<Integer> featureValue : feature.getAllValues()) {
-            optionalCutoffs.add(featureValue.getValue());
+        for (int featureValue : feature.getAllValues()) {
+            optionalCutoffs.add(featureValue);
         }
         optionalCutoffs.sort(Integer::compareTo);
         return optionalCutoffs;

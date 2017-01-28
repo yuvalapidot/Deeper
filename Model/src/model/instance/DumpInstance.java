@@ -16,8 +16,25 @@ public class DumpInstance extends Instance<Dump> {
         super(dump);
     }
 
+    public static DumpInstance instance(Dump dump) {
+        DumpInstance instance = new DumpInstance(dump);
+        return (DumpInstance) instance(instance);
+    }
+
+    public static DumpInstance instance(Dump dump, InstanceSetType setType) {
+        DumpInstance instance = new DumpInstance(dump, setType);
+        return (DumpInstance) instance(instance);
+    }
+
+    public static DumpInstance instance(Dump dump, InstanceSetType setType, String classification) {
+        DumpInstance instance = new DumpInstance(dump, setType, classification);
+        return (DumpInstance) instance(instance);
+    }
+
     @Override
     public String getName() {
         return instance.getName();
     }
+
+
 }

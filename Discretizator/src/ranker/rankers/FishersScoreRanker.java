@@ -20,7 +20,7 @@ public class FishersScoreRanker implements IRankerMethod {
         for (Instance instance : instances) {
             if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
                 counts[classes.indexOf(instance.getClassification())]++;
-                sums[classes.indexOf(instance.getClassification())] += feature.getValue(instance).getValue();
+                sums[classes.indexOf(instance.getClassification())] += feature.getValue(instance);
             }
         }
         double[] averages = new double[classes.size()];
@@ -30,7 +30,7 @@ public class FishersScoreRanker implements IRankerMethod {
         double[] variances = new double[classes.size()];
         for (Instance instance : instances) {
             if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
-                double averageDiff = feature.getValue(instance).getValue() - averages[classes.indexOf(instance.getClassification())];
+                double averageDiff = feature.getValue(instance) - averages[classes.indexOf(instance.getClassification())];
                 variances[classes.indexOf(instance.getClassification())] += averageDiff * averageDiff;
             }
         }

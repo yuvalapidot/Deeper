@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 
 public class MainSequences {
 
-    private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
-    private static final String csvPath = "D:\\Dropbox\\NGrams\\Results\\Sequences\\";
+    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Jsons";
+    private static final String csvPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results\\Sequences\\";
 
     private static final int minimumSupport = 101;
     private static final int maximumSupport = 5000;
@@ -58,19 +58,18 @@ public class MainSequences {
         TD4CDiscretizator klDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new KullbackLeiblerDistance());
         TD4CDiscretizator entropyDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new KullbackLeiblerDistance());
         TD4CDiscretizator cosineDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new KullbackLeiblerDistance());
+        discreteAndWrite(table, klDiscretizator, 3, "kl");
+        discreteAndWrite(table, klDiscretizator, 5, "kl");
+        discreteAndWrite(table, entropyDiscretizator, 3, "entropy");
+        discreteAndWrite(table, entropyDiscretizator, 5, "entropy");
+        discreteAndWrite(table, cosineDiscretizator, 3, "cosine");
+        discreteAndWrite(table, cosineDiscretizator, 5, "cosine");
+    }
+
+    private static void discreteAndWrite(DataTable table, TD4CDiscretizator discretizator, int bins, String sign) throws IOException {
         DataTableCsvWriter writer = new DataTableCsvWriter();
-        DataTable klTable3 = klDiscretizator.discrete(table, 3);
-        writer.dataTableToCsv(new DataTableToCsvRequest(klTable3, csvPath + "kl-3-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.2));
-        DataTable klTable5 = klDiscretizator.discrete(table, 5);
-        writer.dataTableToCsv(new DataTableToCsvRequest(klTable5, csvPath + "kl-5-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.2));
-        DataTable entropyTable3 = entropyDiscretizator.discrete(table, 3);
-        writer.dataTableToCsv(new DataTableToCsvRequest(entropyTable3, csvPath + "entropy-3-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.2));
-        DataTable entropyTable5 = entropyDiscretizator.discrete(table, 5);
-        writer.dataTableToCsv(new DataTableToCsvRequest(entropyTable5, csvPath + "entropy-5-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.2));
-        DataTable cosineTable3 = cosineDiscretizator.discrete(table, 3);
-        writer.dataTableToCsv(new DataTableToCsvRequest(cosineTable3, csvPath + "cosine-3-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.2));
-        DataTable cosineTable5 = cosineDiscretizator.discrete(table, 5);
-        writer.dataTableToCsv(new DataTableToCsvRequest(cosineTable5, csvPath + "cosine-5-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 1, 0.2));
+        DataTable discreteTable = discretizator.discrete(table, bins, 1);
+        writer.dataTableToCsv(new DataTableToCsvRequest(discreteTable, csvPath + sign + "-" + bins + "-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 1));
     }
 
     private static List<File> getJsonFiles() throws IOException {

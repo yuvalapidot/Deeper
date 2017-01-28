@@ -11,8 +11,8 @@ public class RankedFeature <S> extends Feature<S> implements Comparable<RankedFe
         this.rank = rank;
     }
 
-    public RankedFeature(FeatureKey<?, S> key, DataTable dataTable) {
-        super(key, dataTable);
+    public RankedFeature(Object key, S defaultValue, DataTable dataTable) {
+        super(key, defaultValue, dataTable);
     }
 
     public double getRank() {

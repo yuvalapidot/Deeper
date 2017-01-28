@@ -1,8 +1,6 @@
 import model.data.DataTable;
 import model.feature.Feature;
-import model.feature.FeatureKey;
 import model.instance.Instance;
-import model.instance.StringInstance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reader.CsvToDataTableRequest;
@@ -25,14 +23,14 @@ public class Main {
     private static final String experimentRootFolder = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results 50";
     private static final String resultFilePath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results 50\\Results Combined.csv";
 
-    private static final FeatureKey<String, String> keySchemeFeatureKey = new FeatureKey<>("Key_Scheme");
-    private static final FeatureKey<String, String> keyDatasetFeatureKey = new FeatureKey<>("Key_Dataset");
-    private static final FeatureKey<String, String> truePositiveFeatureKey = new FeatureKey<>("True_positive_rate");
-    private static final FeatureKey<String, String> falsePositiveFeatureKey = new FeatureKey<>("False_positive_rate");
-    private static final FeatureKey<String, String> trueNegativeFeatureKey = new FeatureKey<>("True_negative_rate");
-    private static final FeatureKey<String, String> falseNegativeFeatureKey = new FeatureKey<>("False_negative_rate");
-    private static final FeatureKey<String, String> fMeasureFeatureKey = new FeatureKey<>("F_measure");
-    private static final FeatureKey<String, String> aucFeatureKey = new FeatureKey<>("Area_under_ROC");
+    private static final String keySchemeFeatureKey = "Key_Scheme";
+    private static final String keyDatasetFeatureKey = "Key_Dataset";
+    private static final String truePositiveFeatureKey = "True_positive_rate";
+    private static final String falsePositiveFeatureKey = "False_positive_rate";
+    private static final String trueNegativeFeatureKey = "True_negative_rate";
+    private static final String falseNegativeFeatureKey = "False_negative_rate";
+    private static final String fMeasureFeatureKey = "F_measure";
+    private static final String aucFeatureKey = "Area_under_ROC";
 
     public static void main(String[] args) throws IOException {
         DataTableCsvReader reader = new DataTableCsvReader();
@@ -52,14 +50,14 @@ public class Main {
             Map<String, Map<String, Map<String, Map<String, List<Double>>>>> experimentMap = new LinkedHashMap<>();
             experimentsMap.put(experiment, experimentMap);
             for (Instance instance : table.getInstances()) {
-                String classifier = keyScheme.getValue(instance).getValue();
+                String classifier = keyScheme.getValue(instance);
                 classifier = classifier.substring(classifier.lastIndexOf('.') + 1);
                 Map<String, Map<String, Map<String, List<Double>>>> classifierMap = experimentMap.get(classifier);
                 if (classifierMap == null) {
                     classifierMap = new LinkedHashMap<>();
                     experimentMap.put(classifier, classifierMap);
                 }
-                String dataset = keyDataset.getValue(instance).getValue();
+                String dataset = keyDataset.getValue(instance);
                 String featureRepresentation = dataset.substring(dataset.indexOf('-') + 1, dataset.indexOf("-train"));
                 Map<String, Map<String, List<Double>>> featureRepresentationMap = classifierMap.get(featureRepresentation);
                 if (featureRepresentationMap == null) {
@@ -77,37 +75,37 @@ public class Main {
                     truePositiveList = new ArrayList<>();
                     nMap.put("TP", truePositiveList);
                 }
-                truePositiveList.add(Double.parseDouble(truePositive.getValue(instance).getValue()));
+                truePositiveList.add(Double.parseDouble(truePositive.getValue(instance)));
                 List<Double> falsePositiveList = nMap.get("FP");
                 if (falsePositiveList == null) {
                     falsePositiveList = new ArrayList<>();
                     nMap.put("FP", falsePositiveList);
                 }
-                falsePositiveList.add(Double.parseDouble(falsePositive.getValue(instance).getValue()));
+                falsePositiveList.add(Double.parseDouble(falsePositive.getValue(instance)));
                 List<Double> trueNegativeList = nMap.get("TN");
                 if (trueNegativeList == null) {
                     trueNegativeList = new ArrayList<>();
                     nMap.put("TN", trueNegativeList);
                 }
-                trueNegativeList.add(Double.parseDouble(trueNegative.getValue(instance).getValue()));
+                trueNegativeList.add(Double.parseDouble(trueNegative.getValue(instance)));
                 List<Double> falseNegativeList = nMap.get("FN");
                 if (falseNegativeList == null) {
                     falseNegativeList = new ArrayList<>();
                     nMap.put("FN", falseNegativeList);
                 }
-                falseNegativeList.add(Double.parseDouble(falseNegative.getValue(instance).getValue()));
+                falseNegativeList.add(Double.parseDouble(falseNegative.getValue(instance)));
                 List<Double> fMeasureList = nMap.get("F-Measure");
                 if (fMeasureList == null) {
                     fMeasureList = new ArrayList<>();
                     nMap.put("F-Measure", fMeasureList);
                 }
-                fMeasureList.add(Double.parseDouble(fMeasure.getValue(instance).getValue()));
+                fMeasureList.add(Double.parseDouble(fMeasure.getValue(instance)));
                 List<Double> aucList = nMap.get("AUC");
                 if (aucList == null) {
                     aucList = new ArrayList<>();
                     nMap.put("AUC", aucList);
                 }
-                aucList.add(Double.parseDouble(auc.getValue(instance).getValue()));
+                aucList.add(Double.parseDouble(auc.getValue(instance)));
                 log.info(classifier);
             }
         }

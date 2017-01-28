@@ -23,12 +23,12 @@ public class GSPSequenceFinder extends AbstractSequenceFinder {
         Set<Call> alphaBet = getAlphaBet(pseudoSequences);
         Map<Sequence, List<DumpInstance>> subSequences = new LinkedHashMap<>();
         Map<Sequence, List<DumpInstance>> formerLayer = new LinkedHashMap<>();
-        formerLayer.put(new Sequence(), dumps);
+        formerLayer.put(Sequence.instance(), dumps);
         for (int i = 1; i <= maximumSequenceLength(pseudoSequences); i++) {
             Map<Sequence, List<DumpInstance>> nextLayer = new LinkedHashMap<>();
             for (Sequence subSequence : formerLayer.keySet()) {
                 for (Call call : alphaBet) {
-                    Sequence newSubSequence = new Sequence(subSequence);
+                    Sequence newSubSequence = Sequence.instance(subSequence);
                     newSubSequence.addCall(call);
                     nextLayer.put(newSubSequence, getSubSequenceDumpSet(pseudoSequences, newSubSequence));
                 }

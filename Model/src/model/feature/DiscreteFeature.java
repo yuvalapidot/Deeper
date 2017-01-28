@@ -8,8 +8,8 @@ public class DiscreteFeature extends RankedFeature<Integer> {
 
     private List<Integer> cutoffs;
 
-    public DiscreteFeature(FeatureKey<?, Integer> key, DataTable dataTable) {
-        super(key, dataTable);
+    public DiscreteFeature(Object key, Integer defaultValue, DataTable dataTable) {
+        super(key, defaultValue, dataTable);
     }
 
     public List<Integer> getCutoffs() {

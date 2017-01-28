@@ -3,8 +3,6 @@ package creator;
 import extractor.IFeatureExtractor;
 import extractor.MultipleFeatureExtractor;
 import model.data.DataTable;
-import model.feature.FeatureKey;
-import model.feature.FeatureValue;
 import model.instance.DumpInstance;
 import model.memory.Dump;
 import reader.JsonDumpReader;
@@ -48,9 +46,9 @@ public class DumpJsonsToDataTableCreator extends DataTableCreator {
     }
 
     private void addClassifications(DataTable table, List<DumpInstance> instances) {
-        FeatureKey<String, String> classFeatureKey = new FeatureKey<>("Class", "Unknown");
+        String classFeatureKey = "Class";
         for (DumpInstance instance : instances) {
-            table.put(instance, classFeatureKey, new FeatureValue<>(instance.getClassification()));
+            table.put(instance, classFeatureKey, instance.getClassification());
         }
     }
 

@@ -16,11 +16,11 @@ public class CallStack {
     }
 
     public void appendCall(Call call) {
-        callList.add(call);
+        callList.add(Call.instance(call));
     }
 
     public void prependCall(Call call) {
-        callList.add(0, call);
+        callList.add(0, Call.instance(call));
     }
 
     public List<Call> getCallList() {

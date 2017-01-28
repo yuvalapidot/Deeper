@@ -1,9 +1,6 @@
 package model.data;
 
-import model.feature.BinaryFeatureValue;
 import model.feature.Feature;
-import model.feature.FeatureKey;
-import model.feature.FeatureValue;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
 
@@ -15,7 +12,7 @@ public class DataTable {
     private final Set<Instance> trainInstances;
     private final Set<Instance> testInstances;
     private final Set<Feature> features;
-    private final Map<FeatureKey, Feature> featureMap;
+    private final Map<Object, Feature> featureMap;
     private final Map<Instance, Integer> maxValues;
 
     private Map<Feature, Double> inverseDocumentFrequencies;
@@ -30,14 +27,14 @@ public class DataTable {
         testInstances = new HashSet<>();
     }
 
-    public <S> void put(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
+    public <S> void put(Instance instance, Object key, S value) {
         addInstance(instance);
-        getCreateFeature(featureKey).setValue(instance, featureValue);
-        if (featureValue.getValue() instanceof Integer) {
-            Integer value = (Integer) featureValue.getValue();
+        getCreateFeature(key, 0).setValue(instance, value);
+        if (value instanceof Integer) {
+            Integer intValue = (Integer) value;
             Integer maxValue = maxValues.get(instance);
-            if (maxValue == null || value > maxValue) {
-                maxValues.put(instance, value);
+            if (maxValue == null || intValue > maxValue) {
+                maxValues.put(instance, intValue);
             }
         }
         inverseDocumentFrequencies = new HashMap<>();
@@ -48,8 +45,8 @@ public class DataTable {
         featureMap.put(feature.getKey(), feature);
         for (Instance instance : feature.getAllConcritInstances()) {
             addInstance(instance);
-            if (feature.getValue(instance).getValue() instanceof Integer) {
-                Integer value = (Integer) feature.getValue(instance).getValue();
+            if (feature.getValue(instance) instanceof Integer) {
+                Integer value = (Integer) feature.getValue(instance);
                 Integer maxValue = maxValues.get(instance);
                 if (maxValue == null || value > maxValue) {
                     maxValues.put(instance, value);
@@ -59,9 +56,9 @@ public class DataTable {
         inverseDocumentFrequencies = new HashMap<>();
     }
 
-    public <S> boolean putIfFeatureExists(Instance instance, FeatureKey<?, S> featureKey, FeatureValue<S> featureValue) {
-        if (featureMap.containsKey(featureKey)) {
-            put(instance, featureKey, featureValue);
+    public <S> boolean putIfFeatureExists(Instance instance, S key, S value) {
+        if (featureMap.containsKey(key)) {
+            put(instance, key, value);
             return true;
         } else {
             addInstance(instance);
@@ -78,7 +75,7 @@ public class DataTable {
         }
     }
 
-    public Feature getFeature(FeatureKey key) {
+    public Feature getFeature(Object key) {
         return featureMap.get(key);
     }
 
@@ -90,11 +87,15 @@ public class DataTable {
         return features;
     }
 
-    private Feature getCreateFeature(FeatureKey key) {
+    private Feature getCreateFeature(Object key) {
+        return getCreateFeature(key, 0);
+    }
+
+    private Feature getCreateFeature(Object key, Object defaultValue) {
         Feature feature = featureMap.get(key);
         if (feature == null) {
             // TODO - change to this instead of null.
-            feature = new Feature(key, null);
+            feature = new Feature(key, defaultValue, null);
             features.add(feature);
             featureMap.put(key, feature);
         }
@@ -114,22 +115,14 @@ public class DataTable {
 //        }
 //    }
 
-    public FeatureValue getTimeFrequencyValue(Instance instance, Feature feature) {
-        FeatureValue value = feature.getValue(instance);
-        if (value.getValue() instanceof Integer) {
-            return new FeatureValue<>(((Integer) value.getValue()).doubleValue() / getInstanceMaximumTermFrequency(instance));
-        } else {
-            return value;
-        }
+    public double getTimeFrequencyValue(Instance instance, Feature<Integer> feature) {
+        Integer value = feature.getValue(instance);
+        return value.doubleValue() / getInstanceMaximumTermFrequency(instance);
     }
 
-    public FeatureValue getTimeFrequencyInverseDocumentFrequencyValue(Instance instance, Feature feature) {
-        FeatureValue timeFrequencyValue = getTimeFrequencyValue(instance, feature);
-        if (timeFrequencyValue.getValue() instanceof Double) {
-            return new FeatureValue<>(((Double) timeFrequencyValue.getValue()) * getInverseDocumentFrequency(feature));
-        } else {
-            return timeFrequencyValue;
-        }
+    public double getTimeFrequencyInverseDocumentFrequencyValue(Instance instance, Feature<Integer> feature) {
+        double timeFrequencyValue = getTimeFrequencyValue(instance, feature);
+        return timeFrequencyValue * getInverseDocumentFrequency(feature);
     }
 
     private int getInstanceMaximumTermFrequency(Instance instance) {
@@ -147,7 +140,7 @@ public class DataTable {
         }
         int countTrainDocumentWithFeature = 0;
         for (Instance instance : trainInstances) {
-            if (feature.getBinaryValue(instance).equals(BinaryFeatureValue.TRUE_VALUE)) {
+            if (feature.getBinaryValue(instance).equals(1)) {
                 countTrainDocumentWithFeature++;
             }
         }
