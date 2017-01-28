@@ -1,7 +1,5 @@
 package model.instance;
 
-import model.memory.Call;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,14 +79,13 @@ public abstract class Instance<T> {
         Instance<?> instance1 = (Instance<?>) o;
 
         if (!instance.equals(instance1.instance)) return false;
-        return setType == instance1.setType;
+        return true;
 
     }
 
     @Override
     public int hashCode() {
         int result = instance.hashCode();
-        result = 31 * result + setType.hashCode();
         return result;
     }
 

@@ -7,16 +7,25 @@ import java.util.*;
 
 public class Feature <S> {
 
+    private static Map<Instance, Integer> instanceMapping;
+
     private final Object key;
-    private final Map<Instance, S> values;
+    private final S[] values;
     private S defaultValue;
     private DataTable dataTable;
+
+    public static void initialize(List<? extends Instance> instances) {
+        instanceMapping = new LinkedHashMap<>();
+        for (int i = 0; i < instances.size(); i++) {
+            instanceMapping.put(instances.get(i), i);
+        }
+    }
 
     public Feature(Object key, S defaultValue, DataTable dataTable) {
         this.key = key;
         this.defaultValue = defaultValue;
         this.dataTable = dataTable;
-        values = new LinkedHashMap<>();
+        values = (S[]) new Object[instanceMapping.size()];
     }
 
     public Feature(Feature<S> feature) {
@@ -27,7 +36,7 @@ public class Feature <S> {
     }
 
     public S getValue(Instance instance) {
-        S value = values.get(instance);
+        S value = values[instanceMapping.get(instance)];
         if (value == null) {
             return defaultValue;
         }
@@ -41,38 +50,28 @@ public class Feature <S> {
         return 0;
     }
 
-    public Collection<S> getAllValues() {
-        return values.values();
+    public Set<S> getAllValues() {
+        Set set = new HashSet(Arrays.asList(values));
+        if (set.remove(null)) {
+            set.add(defaultValue);
+        }
+        return set;
     }
 
     public Set<Instance> getAllConcritInstances() {
-        return values.keySet();
-    }
-
-    public List<Instance> getInstancesOfClassification(String classification) {
-        List<Instance> instances = new ArrayList<>();
-        for (Instance instance : values.keySet()) {
-            if (instance.getClassification().equals(classification)) {
-                instances.add(instance);
-            }
-        }
-        return instances;
+        return instanceMapping.keySet();
     }
 
     public void setValue(Instance instance, S value) {
-        values.put(instance, value);
+        values[instanceMapping.get(instance)] = value;
     }
 
     public Object getKey() {
         return key;
     }
 
-    public void append(Feature<S> feature) {
-        values.putAll(feature.values);
-    }
-
     public int size() {
-        return values.size();
+        return values.length;
     }
 
     public DataTable getDataTable() {

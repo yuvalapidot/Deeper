@@ -27,6 +27,12 @@ public class CallStack {
         return callList;
     }
 
+    public void setCallList(List<Call> callList) {
+        for (Call call : callList) {
+            this.callList.add(Call.instance(call));
+        }
+    }
+
     public int size() {
         return callList.size();
     }

@@ -106,11 +106,11 @@ public class Call {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        if (lookupTable.get(this) == this) {
-            lookupTable.remove(this);
-        }
-    }
+//    @Override
+//    protected void finalize() throws Throwable {
+//        super.finalize();
+//        if (lookupTable.get(this) == this) {
+//            lookupTable.remove(this);
+//        }
+//    }
 }

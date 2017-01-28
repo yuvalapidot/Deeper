@@ -19,7 +19,7 @@ public class Ranker {
         this.rankerMethod = rankerMethod;
     }
 
-    public DataTable rankTable(DataTable table) {
+    public DataTable rankTable(DataTable table, double threshold) {
         DataTable rankedTable = new DataTable();
         List<RankedFeature> rankedFeatures = new ArrayList<>();
         Feature classFeature = null;
@@ -28,8 +28,10 @@ public class Ranker {
                 classFeature = feature;
             } else {
                 RankedFeature rankedFeature = rank(feature, table.getInstances());
-                rankedFeature.setDataTable(rankedTable);
-                rankedFeatures.add(rankedFeature);
+                if (rankedFeature.getRank() > threshold) {
+                    rankedFeature.setDataTable(rankedTable);
+                    rankedFeatures.add(rankedFeature);
+                }
             }
         }
         rankedFeatures.sort(RankedFeature::compareTo);

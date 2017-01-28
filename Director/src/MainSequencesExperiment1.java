@@ -3,14 +3,19 @@ import creator.DumpToDataTableCreator;
 import extractor.IFeatureExtractor;
 import extractor.SequenceExtractor;
 import model.data.DataTable;
+import model.feature.Feature;
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
 import model.memory.Dump;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ranker.Ranker;
+import ranker.rankers.FishersScoreRanker;
 import reader.JsonDumpReader;
 import reader.JsonToDumpRequest;
 import td4c.TD4CDiscretizator;
+import td4c.measures.CosineDistance;
+import td4c.measures.EntropyDistance;
 import td4c.measures.KullbackLeiblerDistance;
 import writer.CsvNumberRepresentation;
 import writer.DataTableCsvWriter;
@@ -23,18 +28,18 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MainSequences {
+public class MainSequencesExperiment1 {
 
-    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Jsons";
-    private static final String csvPath = "C:\\Users\\yuval\\Dropbox\\NGrams\\Results\\Sequences\\";
+    private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
+    private static final String csvPath = "D:\\Dropbox\\NGrams\\Results\\Sequences\\Experiemnt 1\\";
 
     private static final int minimumSupport = 101;
     private static final int maximumSupport = 5000;
-    private static final int minimumSequenceLength = 4;
+    private static final int minimumSequenceLength = 2;
     private static final int maximumSequenceLength = 4;
     private static final int batchSize = 100;
 
-    private static final String[] BenignNames = { "Defrag", "Baseline", "Procmon", "Avast", "Wireshark" };
+    private static final String[] BenignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] MaliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
 
     private static final Set<InstanceSetType> TRAIN_TEST = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
@@ -43,33 +48,47 @@ public class MainSequences {
 
     public static void main(String[] args) throws IOException {
         List<Dump> dumps = getDumps(getJsonFiles());
-        DumpInstanceCreator[] creators = new DumpInstanceCreator[BenignNames.length + MaliciousNames.length];
-        for (int i = 0; i < BenignNames.length; i++) {
-                creators[i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", batchSize, 100);
-        }
-        for (int i = 0; i < MaliciousNames.length; i++) {
-                creators[BenignNames.length + i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", batchSize, 100);
-        }
+        DumpInstanceCreator[] creators = creatorsForExperiment1();
         List<DumpInstance> dumpInstances = getDumpInstances(dumps, creators);
+        Feature.initialize(dumpInstances);
         IFeatureExtractor<DumpInstance> extractor = new SequenceExtractor(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength, batchSize);
         DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
         creator.addExtractor(extractor);
         DataTable table = creator.createDataTable();
         TD4CDiscretizator klDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new KullbackLeiblerDistance());
-        TD4CDiscretizator entropyDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new KullbackLeiblerDistance());
-        TD4CDiscretizator cosineDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new KullbackLeiblerDistance());
+        TD4CDiscretizator entropyDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new EntropyDistance());
+        TD4CDiscretizator cosineDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new CosineDistance());
+        Ranker ranker = new Ranker(new FishersScoreRanker());
         discreteAndWrite(table, klDiscretizator, 3, "kl");
         discreteAndWrite(table, klDiscretizator, 5, "kl");
         discreteAndWrite(table, entropyDiscretizator, 3, "entropy");
         discreteAndWrite(table, entropyDiscretizator, 5, "entropy");
         discreteAndWrite(table, cosineDiscretizator, 3, "cosine");
         discreteAndWrite(table, cosineDiscretizator, 5, "cosine");
+        rankAndWrite(table, ranker);
+    }
+
+    private static DumpInstanceCreator[] creatorsForExperiment1() {
+        DumpInstanceCreator[] creators = new DumpInstanceCreator[BenignNames.length + MaliciousNames.length];
+        for (int i = 0; i < MaliciousNames.length; i++) {
+            creators[BenignNames.length + i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", batchSize, 100);
+        }
+        for (int i = 0; i < BenignNames.length; i++) {
+            creators[i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", batchSize, 100);
+        }
+        return creators;
     }
 
     private static void discreteAndWrite(DataTable table, TD4CDiscretizator discretizator, int bins, String sign) throws IOException {
         DataTableCsvWriter writer = new DataTableCsvWriter();
         DataTable discreteTable = discretizator.discrete(table, bins, 1);
-        writer.dataTableToCsv(new DataTableToCsvRequest(discreteTable, csvPath + sign + "-" + bins + "-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 1));
+        writer.dataTableToCsv(new DataTableToCsvRequest(discreteTable, csvPath + "min_support=" + minimumSupport + "-max_support=" + maximumSupport + "-sequence_length=" + minimumSequenceLength + "-" + maximumSequenceLength + "-" + sign + "-" + bins + "-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 1));
+    }
+
+    private static void rankAndWrite(DataTable table, Ranker ranker) throws IOException {
+        DataTableCsvWriter writer = new DataTableCsvWriter();
+        DataTable rankedTable = ranker.rankTable(table, 1);
+        writer.dataTableToCsv(new DataTableToCsvRequest(rankedTable, csvPath + "min_support=" + minimumSupport + "-max_support=" + maximumSupport + "-sequence_length=" + minimumSequenceLength + "-" + maximumSequenceLength + "-ranked.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 1));
     }
 
     private static List<File> getJsonFiles() throws IOException {
