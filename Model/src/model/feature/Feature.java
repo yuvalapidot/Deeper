@@ -43,6 +43,14 @@ public class Feature <S> {
         return value;
     }
 
+    private S getValue(int index) {
+        S value = values[index];
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
     public Integer getBinaryValue(Instance instance) {
         if (getValue(instance) != null) {
             return 1;
@@ -80,5 +88,15 @@ public class Feature <S> {
 
     public void setDataTable(DataTable dataTable) {
         this.dataTable = dataTable;
+    }
+
+    public double correlationRatio(Feature other) {
+        int counter = 0;
+        for (int i : instanceMapping.values()) {
+            if (getValue(i).equals(other.getValue(i))) {
+                counter++;
+            }
+        }
+        return counter / (double) instanceMapping.size();
     }
 }

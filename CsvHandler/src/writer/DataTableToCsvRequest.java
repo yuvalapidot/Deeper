@@ -13,15 +13,17 @@ public class DataTableToCsvRequest extends Observable {
     private CsvNumberRepresentation representation = CsvNumberRepresentation.INTEGER_REPRESENTATION;
     private Set<InstanceSetType> instanceSetTypesFilter;
     private int featurePercentage;
-    private double scoreThreshold;
+    private int minimumNumberOfFeatures;
+    private int maximumNumberOfFeatures;
 
-    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypes, int featurePercentage, double scoreThreshold) {
+    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypes, int featurePercentage, int minimumNumberOfFeatures, int maximumNumberOfFeatures) {
         this.dataTable = dataTable;
         this.csvPath = csvPath;
         this.representation = representation;
         this.instanceSetTypesFilter = instanceSetTypes;
         this.featurePercentage = featurePercentage;
-        this.scoreThreshold = scoreThreshold;
+        this.minimumNumberOfFeatures = minimumNumberOfFeatures;
+        this.maximumNumberOfFeatures = maximumNumberOfFeatures;
     }
 
     public DataTable getDataTable() {
@@ -64,11 +66,19 @@ public class DataTableToCsvRequest extends Observable {
         this.featurePercentage = featurePercentage;
     }
 
-    public double getScoreThreshold() {
-        return scoreThreshold;
+    public int getMinimumNumberOfFeatures() {
+        return minimumNumberOfFeatures;
     }
 
-    public void setScoreThreshold(double scoreThreshold) {
-        this.scoreThreshold = scoreThreshold;
+    public void setMinimumNumberOfFeatures(int minimumNumberOfFeatures) {
+        this.minimumNumberOfFeatures = minimumNumberOfFeatures;
+    }
+
+    public int getMaximumNumberOfFeatures() {
+        return maximumNumberOfFeatures;
+    }
+
+    public void setMaximumNumberOfFeatures(int maximumNumberOfFeatures) {
+        this.maximumNumberOfFeatures = maximumNumberOfFeatures;
     }
 }

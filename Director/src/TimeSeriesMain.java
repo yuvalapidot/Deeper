@@ -98,10 +98,10 @@ public class TimeSeriesMain {
                 DataTableCreator creator = new DumpToDataTableCreator(dumpInstances);
                 creator.addExtractor(extractor);
                 DataTable table = creator.createDataTable();
-                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "Regular\\" + j + "-regular-train+test" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 0));
-                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "Binary\\" + j + "-binary-train+test" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST, 100, 0));
-                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "TF\\" + j + "-tf-train+test" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST, 100, 0));
-                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "TF-IDF\\" + j + "-tf-idf-train+test" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST, 100, 0));
+                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "Regular\\" + j + "-regular-train+test" + csvName, CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, 0, 1000000));
+                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "Binary\\" + j + "-binary-train+test" + csvName, CsvNumberRepresentation.BINARY_REPRESENTATION, TRAIN_TEST, 100, 0, 1000000));
+                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "TF\\" + j + "-tf-train+test" + csvName, CsvNumberRepresentation.TF_REPRESENTATION, TRAIN_TEST, 100, 0, 1000000));
+                writer.dataTableToCsv(new DataTableToCsvRequest(table, csvPath + " " + (i + 1) + "\\" + "TF-IDF\\" + j + "-tf-idf-train+test" + csvName, CsvNumberRepresentation.TFIDF_REPRESENTATION, TRAIN_TEST, 100, 0, 1000000));
                 extractors.add(extractor);
             }
         }

@@ -30,10 +30,10 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MainSequencesExperiment2 {
+public class MainSequencesExperiment2Benign {
 
     private static final String jsonsDirectoryPath = "D:\\Dropbox\\NGrams\\Jsons";
-    private static final String csvPath = "D:\\Dropbox\\NGrams\\Results\\Sequences\\Experiment 2\\Malicious Tested\\";
+    private static final String csvPath = "D:\\Dropbox\\NGrams\\Results\\Sequences\\Experiment 2\\Benign Tested\\";
 
     private static final int minimumSupport = 101;
     private static final int maximumSupport = 5000;
@@ -49,7 +49,7 @@ public class MainSequencesExperiment2 {
 
     private static final Set<InstanceSetType> TRAIN_TEST = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
 
-    private static final Logger log = LogManager.getLogger(MainSequencesExperiment2.class);
+    private static final Logger log = LogManager.getLogger(MainSequencesExperiment2Benign.class);
 
     public static void main(String[] args) throws IOException {
         List<Dump> dumps = getDumps(getJsonFiles());
@@ -65,33 +65,33 @@ public class MainSequencesExperiment2 {
         TD4CDiscretizator entropyDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new EntropyDistance());
         TD4CDiscretizator cosineDiscretizator = new TD4CDiscretizator(new LinkedHashSet<>(dumpInstances), new CosineDistance());
         Ranker ranker = new Ranker(new FishersScoreRanker());
-        for (String maliciousToTest : MaliciousNames) {
-            changeTestInstances(table, maliciousToTest);
-            rankAndWrite(table, ranker, maliciousToTest);
-            discreteAndWrite(table, klDiscretizator, 3, "kl", maliciousToTest);
-            discreteAndWrite(table, klDiscretizator, 5, "kl", maliciousToTest);
-            discreteAndWrite(table, entropyDiscretizator, 3, "entropy", maliciousToTest);
-            discreteAndWrite(table, entropyDiscretizator, 5, "entropy", maliciousToTest);
-            discreteAndWrite(table, cosineDiscretizator, 3, "cosine", maliciousToTest);
-            discreteAndWrite(table, cosineDiscretizator, 5, "cosine", maliciousToTest);
+        for (String benignToTest : BenignNames) {
+            changeTestInstances(table, benignToTest);
+            rankAndWrite(table, ranker, benignToTest);
+            discreteAndWrite(table, klDiscretizator, 3, "kl", benignToTest);
+            discreteAndWrite(table, klDiscretizator, 5, "kl", benignToTest);
+            discreteAndWrite(table, entropyDiscretizator, 3, "entropy", benignToTest);
+            discreteAndWrite(table, entropyDiscretizator, 5, "entropy", benignToTest);
+            discreteAndWrite(table, cosineDiscretizator, 3, "cosine", benignToTest);
+            discreteAndWrite(table, cosineDiscretizator, 5, "cosine", benignToTest);
         }
     }
 
     private static DumpInstanceCreator[] creatorsForExperiment() {
         DumpInstanceCreator[] creators = new DumpInstanceCreator[BenignNames.length + MaliciousNames.length];
         for (int i = 0; i < MaliciousNames.length; i++) {
-            creators[i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", batchSize, 100);
+            creators[i] = new DumpInstanceCreator(MaliciousNames[i], "MALICIOUS", batchSize, 80);
         }
         for (int i = 0; i < BenignNames.length; i++) {
-            creators[MaliciousNames.length + i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", batchSize, 80);
+            creators[MaliciousNames.length + i] = new DumpInstanceCreator(BenignNames[i], "BENIGN", batchSize, 100);
         }
         return creators;
     }
 
-    private static void changeTestInstances(DataTable table, String maliciousToTest) {
+    private static void changeTestInstances(DataTable table, String benignNames) {
         for (Instance instance : table.getInstances()) {
-            if (instance.getClassification().equals("MALICIOUS")) {
-                if (instance.getType().equals(maliciousToTest)) {
+            if (instance.getClassification().equals("BENIGN")) {
+                if (instance.getType().equals(benignNames)) {
                     instance.setSetType(InstanceSetType.TEST_SET);
                 } else {
                     instance.setSetType(InstanceSetType.TRAIN_SET);
@@ -100,16 +100,16 @@ public class MainSequencesExperiment2 {
         }
     }
 
-    private static void discreteAndWrite(DataTable table, TD4CDiscretizator discretizator, int bins, String sign, String testedMalicious) throws IOException {
+    private static void discreteAndWrite(DataTable table, TD4CDiscretizator discretizator, int bins, String sign, String testedBenign) throws IOException {
         DataTableCsvWriter writer = new DataTableCsvWriter();
         DataTable discreteTable = discretizator.discrete(table, bins, 0.1);
-        writer.dataTableToCsv(new DataTableToCsvRequest(discreteTable, csvPath + testedMalicious + " Tested\\" + testedMalicious + "-tested-min_support=" + minimumSupport + "-max_support=" + maximumSupport + "-sequence_length=" + minimumSequenceLength + "-" + maximumSequenceLength + "-" + sign + "-" + bins + "-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, featuresMin, featuresMax));
+        writer.dataTableToCsv(new DataTableToCsvRequest(discreteTable, csvPath + testedBenign + " Tested\\" + testedBenign + "-tested-min_support=" + minimumSupport + "-max_support=" + maximumSupport + "-sequence_length=" + minimumSequenceLength + "-" + maximumSequenceLength + "-" + sign + "-" + bins + "-bins.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, featuresMin, featuresMax));
     }
 
-    private static void rankAndWrite(DataTable table, Ranker ranker, String testedMalicious) throws IOException {
+    private static void rankAndWrite(DataTable table, Ranker ranker, String testedBenign) throws IOException {
         DataTableCsvWriter writer = new DataTableCsvWriter();
         DataTable rankedTable = ranker.rankTable(table, 0.1);
-        writer.dataTableToCsv(new DataTableToCsvRequest(rankedTable, csvPath + testedMalicious + " Tested\\" + testedMalicious + "-tested-min_support=" + minimumSupport + "-max_support=" + maximumSupport + "-sequence_length=" + minimumSequenceLength + "-" + maximumSequenceLength + "-ranked.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, featuresMin, featuresMax));
+        writer.dataTableToCsv(new DataTableToCsvRequest(rankedTable, csvPath + testedBenign + " Tested\\" + testedBenign + "-tested-min_support=" + minimumSupport + "-max_support=" + maximumSupport + "-sequence_length=" + minimumSequenceLength + "-" + maximumSequenceLength + "-ranked.csv", CsvNumberRepresentation.INTEGER_REPRESENTATION, TRAIN_TEST, 100, featuresMin, featuresMax));
     }
 
     private static void addThreadsAndProcesses(DataTable table) {

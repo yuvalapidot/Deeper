@@ -5,6 +5,8 @@ import model.feature.DiscreteFeature;
 import model.feature.Feature;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import td4c.measures.IDistanceMeasure;
 
 import java.util.*;
@@ -13,6 +15,8 @@ public class TD4CDiscretizator {
 
     private Map<String, Set<Instance>> classedInstances;
     private IDistanceMeasure distanceMeasure;
+
+    private static final Logger log = LogManager.getLogger(TD4CDiscretizator.class);
 
     public TD4CDiscretizator(Set<Instance> instances, IDistanceMeasure distanceMeasure) {
         this.distanceMeasure = distanceMeasure;
@@ -31,6 +35,7 @@ public class TD4CDiscretizator {
         DataTable discreteTable = new DataTable();
         List<DiscreteFeature> discreteFeatures = new ArrayList<>();
         Feature classFeature = null;
+        int discreteFeatureCount = 0;
         for (Feature feature : table.getFeatures()) {
             if (feature.getKey().equals("Class")) {
                 classFeature = feature;
@@ -39,14 +44,29 @@ public class TD4CDiscretizator {
                 if (discreteFeature.getRank() >= threshold) {
 //                    discreteFeature.setDataTable(discreteTable);
                     discreteFeatures.add(discreteFeature);
+                    discreteFeatureCount++;
                 }
             }
         }
+        log.info(discreteFeatureCount + " features out of " + table.getFeatures().size() + " were discrete and ranked above threshold (" + threshold + ")");
         discreteFeatures.sort(DiscreteFeature::compareTo);
         Collections.reverse(discreteFeatures);
+        int numberOfInstances = table.getInstances().size();
+        int addedFeatureCount = 0;
         for (DiscreteFeature discreteFeature : discreteFeatures) {
-            discreteTable.put(discreteFeature);
+            boolean toAdd = true;
+            for (Feature existingFeature : discreteTable.getFeatures()) {
+                if (existingFeature.correlationRatio(discreteFeature) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
+                    toAdd = false;
+                    break;
+                }
+            }
+            if (toAdd) {
+                discreteTable.put(discreteFeature);
+                addedFeatureCount++;
+            }
         }
+        log.info(addedFeatureCount + " Non correlated features out of " + discreteFeatureCount + " discrete and ranked features were added to discrete data table");
         discreteTable.put(classFeature);
         return discreteTable;
     }

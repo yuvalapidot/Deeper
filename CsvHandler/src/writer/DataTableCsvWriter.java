@@ -1,7 +1,6 @@
 package writer;
 
 import model.data.DataTable;
-import model.feature.DiscreteFeature;
 import model.feature.Feature;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
@@ -30,7 +29,7 @@ public class DataTableCsvWriter {
         File csv = new File(request.getCsvPath());
         csv.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(csv)){
-            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter(), request.getFeaturePercentage(), request.getScoreThreshold()));
+            writer.write(dataTableToCsvString(request.getDataTable(), request.getRepresentation(), request.getInstanceSetTypesFilter(), request.getFeaturePercentage(), request.getMinimumNumberOfFeatures(), request.getMaximumNumberOfFeatures()));
         } catch (IOException e) {
             log.info("Encountered an error while writing Data Table into csv: " + request.getCsvPath(), e);
             throw e;
@@ -53,7 +52,7 @@ public class DataTableCsvWriter {
         request.notifyObservers();
     }
 
-    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypesFilter, int featurePercentage, double featureThreshold) {
+    private String dataTableToCsvString(DataTable table, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypesFilter, int featurePercentage, int minimumNumberOfFeatures, int maximumNumberOfFeatures) {
         log.debug("Converting Data Table into csv String. Using '" + CSV_DELIMITER
                 + "' as Delimiter. Replacing all former occurrences of '" + CSV_DELIMITER
                 + "' with '" + CSV_NON_DELIMITER + "'.");
@@ -61,7 +60,7 @@ public class DataTableCsvWriter {
         StringBuilder builder = new StringBuilder();
         Set<Feature> features = table.getFeatures();
         boolean addSeparator = false;
-        int requiredFeaturesCount = featurePercentage * features.size() / 100;
+        int requiredFeaturesCount = Math.min(Math.min(Math.max(featurePercentage * features.size() / 100 , minimumNumberOfFeatures), maximumNumberOfFeatures), features.size());
         int featureCounter = 0;
         for (Feature feature : features) {
             if (addSeparator) {
@@ -69,17 +68,7 @@ public class DataTableCsvWriter {
             } else {
                 addSeparator = true;
             }
-            boolean shouldBreak = false;
-            if (feature instanceof DiscreteFeature) {
-                DiscreteFeature dFeature = (DiscreteFeature) feature;
-                if (dFeature.getRank() < featureThreshold) {
-                    shouldBreak = true;
-                }
-            }
             if (featureCounter >= requiredFeaturesCount) {
-                shouldBreak = true;
-            }
-            if (shouldBreak) {
                 builder.append(csvString("Class"));
                 break;
             }
@@ -98,12 +87,6 @@ public class DataTableCsvWriter {
                 featureCounter = 0;
                 for (Feature feature : features) {
                     boolean shouldBreak = false;
-                    if (feature instanceof DiscreteFeature) {
-                        DiscreteFeature dFeature = (DiscreteFeature) feature;
-                        if (dFeature.getRank() < featureThreshold) {
-                            shouldBreak = true;
-                        }
-                    }
                     if (featureCounter >= requiredFeaturesCount) {
                         shouldBreak = true;
                     }

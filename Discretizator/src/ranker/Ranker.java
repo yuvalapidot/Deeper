@@ -4,6 +4,8 @@ import model.data.DataTable;
 import model.feature.Feature;
 import model.feature.RankedFeature;
 import model.instance.Instance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ranker.rankers.IRankerMethod;
 
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ public class Ranker {
 
     private IRankerMethod rankerMethod;
 
+    private static final Logger log = LogManager.getLogger(Ranker.class);
+
     public Ranker(IRankerMethod rankerMethod) {
         this.rankerMethod = rankerMethod;
     }
@@ -23,6 +27,7 @@ public class Ranker {
         DataTable rankedTable = new DataTable();
         List<RankedFeature> rankedFeatures = new ArrayList<>();
         Feature classFeature = null;
+        int rankedFeatureCount = 0;
         for (Feature feature : table.getFeatures()) {
             if (feature.getKey().equals("Class")) {
                 classFeature = feature;
@@ -31,14 +36,29 @@ public class Ranker {
                 if (rankedFeature.getRank() > threshold) {
                     rankedFeature.setDataTable(rankedTable);
                     rankedFeatures.add(rankedFeature);
+                    rankedFeatureCount++;
                 }
             }
         }
+        log.info(rankedFeatureCount + " features out of " + table.getFeatures().size() + " were ranked above threshold (" + threshold + ")");
         rankedFeatures.sort(RankedFeature::compareTo);
         Collections.reverse(rankedFeatures);
+        int numberOfInstances = table.getInstances().size();
+        int addedFeatureCount = 0;
         for (RankedFeature rankedFeature : rankedFeatures) {
-            rankedTable.put(rankedFeature);
+            boolean toAdd = true;
+            for (Feature existingFeature : rankedTable.getFeatures()) {
+                if (existingFeature.correlationRatio(rankedFeature) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
+                    toAdd = false;
+                    break;
+                }
+            }
+            if (toAdd) {
+                rankedTable.put(rankedFeature);
+                addedFeatureCount++;
+            }
         }
+        log.info(addedFeatureCount + " Non correlated features out of " + rankedFeatureCount + " ranked features were added to ranked data table");
         rankedTable.put(classFeature);
         return rankedTable;
     }

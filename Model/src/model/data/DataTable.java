@@ -66,6 +66,11 @@ public class DataTable {
         }
     }
 
+    private void removeFeature(Feature feature) {
+        features.remove(feature);
+        featureMap.remove(feature.getKey());
+    }
+
     private void addInstance(Instance instance) {
         instances.add(instance);
         if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
@@ -147,5 +152,25 @@ public class DataTable {
         idf = Math.log(((double) trainInstances.size()) / countTrainDocumentWithFeature) / Math.log(2);
         inverseDocumentFrequencies.put(feature, idf);
         return idf;
+    }
+
+    public void removeCorrelatedFeatures(double threshold) {
+        Set<Feature> featuresToRemove = new HashSet<>();
+        for (Feature testedFeature : features) {
+            for (Feature approvedFeature : features) {
+                if (featuresToRemove.contains(approvedFeature)) {
+                    continue;
+                }
+                if (testedFeature == approvedFeature) {
+                    break;
+                }
+                if (approvedFeature.correlationRatio(testedFeature) > threshold) {
+                    featuresToRemove.add(testedFeature);
+                }
+            }
+        }
+        for (Feature feature : featuresToRemove) {
+            removeFeature(feature);
+        }
     }
 }
