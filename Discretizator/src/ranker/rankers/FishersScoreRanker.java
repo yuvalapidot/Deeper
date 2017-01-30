@@ -37,7 +37,7 @@ public class FishersScoreRanker implements IRankerMethod {
         for (int i = 0; i < classes.size(); i++) {
             variances[i] /= counts[i] - 1;
         }
-        return Math.abs(averages[0] - averages[1]) / (variances[0] + variances[1]);
+        return Math.abs(averages[0] - averages[1]) / (Math.sqrt(variances[0]) + Math.sqrt(variances[1]));
     }
 
     private Set<String> findClasses(Set<Instance> instances) {
