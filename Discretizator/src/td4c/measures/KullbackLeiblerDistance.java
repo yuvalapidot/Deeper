@@ -18,6 +18,11 @@ public class KullbackLeiblerDistance extends AbstractDistanceMeasure {
         return klDistance;
     }
 
+    @Override
+    public String getName() {
+        return "Kullback Leibler";
+    }
+
     private double kl(double[] P, double[] Q) {
         double sum = 0;
         for (int i = 0; i < P.length; i++) {

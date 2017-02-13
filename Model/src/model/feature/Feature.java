@@ -51,8 +51,33 @@ public class Feature <S> {
         return value;
     }
 
+    public Object getValue(Instance instance, CsvNumberRepresentation representation) {
+        DataTable table = getDataTable();
+        Object value = getValue(instance);
+        if (!(value instanceof Integer)) {
+            return value;
+        }
+        if (representation.equals(CsvNumberRepresentation.Integer_Representation)) {
+            return value;
+        } else if (representation.equals(CsvNumberRepresentation.Binary_Representation)) {
+            return getBinaryValue(instance);
+        } else if (representation.equals(CsvNumberRepresentation.TF_Representation)) {
+            return table.getTimeFrequencyValue(instance, this);
+        } else if (representation.equals(CsvNumberRepresentation.TFIDF_Representation)) {
+            return table.getTimeFrequencyInverseDocumentFrequencyValue(instance, this);
+        } else {
+            return value;
+        }
+    }
+
     public Integer getBinaryValue(Instance instance) {
-        if (getValue(instance) != null) {
+        Object value = getValue(instance);
+        if (value != null) {
+            if (value instanceof Integer) {
+                if ((Integer) value == 0) {
+                    return 0;
+                }
+            }
             return 1;
         }
         return 0;
@@ -90,7 +115,7 @@ public class Feature <S> {
         this.dataTable = dataTable;
     }
 
-    public double correlationRatio(Feature other) {
+    public double correlationRatio(Feature other, CsvNumberRepresentation representation) {
         int counter = 0;
         for (int i : instanceMapping.values()) {
             if (getValue(i).equals(other.getValue(i))) {

@@ -1,6 +1,7 @@
 package writer;
 
 import model.data.DataTable;
+import model.feature.CsvNumberRepresentation;
 import model.instance.InstanceSetType;
 
 import java.util.Observable;
@@ -10,20 +11,14 @@ public class DataTableToCsvRequest extends Observable {
 
     private DataTable dataTable;
     private String csvPath;
-    private CsvNumberRepresentation representation = CsvNumberRepresentation.INTEGER_REPRESENTATION;
+    private CsvNumberRepresentation representation = CsvNumberRepresentation.Integer_Representation;
     private Set<InstanceSetType> instanceSetTypesFilter;
-    private int featurePercentage;
-    private int minimumNumberOfFeatures;
-    private int maximumNumberOfFeatures;
 
-    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypes, int featurePercentage, int minimumNumberOfFeatures, int maximumNumberOfFeatures) {
+    public DataTableToCsvRequest(DataTable dataTable, String csvPath, CsvNumberRepresentation representation, Set<InstanceSetType> instanceSetTypes) {
         this.dataTable = dataTable;
         this.csvPath = csvPath;
         this.representation = representation;
         this.instanceSetTypesFilter = instanceSetTypes;
-        this.featurePercentage = featurePercentage;
-        this.minimumNumberOfFeatures = minimumNumberOfFeatures;
-        this.maximumNumberOfFeatures = maximumNumberOfFeatures;
     }
 
     public DataTable getDataTable() {
@@ -56,29 +51,5 @@ public class DataTableToCsvRequest extends Observable {
 
     public void setInstanceSetTypesFilter(Set<InstanceSetType> instanceSetTypesFilter) {
         this.instanceSetTypesFilter = instanceSetTypesFilter;
-    }
-
-    public int getFeaturePercentage() {
-        return featurePercentage;
-    }
-
-    public void setFeaturePercentage(int featurePercentage) {
-        this.featurePercentage = featurePercentage;
-    }
-
-    public int getMinimumNumberOfFeatures() {
-        return minimumNumberOfFeatures;
-    }
-
-    public void setMinimumNumberOfFeatures(int minimumNumberOfFeatures) {
-        this.minimumNumberOfFeatures = minimumNumberOfFeatures;
-    }
-
-    public int getMaximumNumberOfFeatures() {
-        return maximumNumberOfFeatures;
-    }
-
-    public void setMaximumNumberOfFeatures(int maximumNumberOfFeatures) {
-        this.maximumNumberOfFeatures = maximumNumberOfFeatures;
     }
 }

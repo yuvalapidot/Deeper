@@ -1,6 +1,7 @@
 package writer;
 
 import model.data.DataTable;
+import model.feature.CsvNumberRepresentation;
 import model.instance.InstanceSetType;
 
 import java.util.Observable;
@@ -10,7 +11,7 @@ public class DataTablesToCsvRequest extends Observable {
 
     private DataTable[] dataTable;
     private String csvPath;
-    private CsvNumberRepresentation[] representation = { CsvNumberRepresentation.INTEGER_REPRESENTATION };
+    private CsvNumberRepresentation[] representation = { CsvNumberRepresentation.Integer_Representation};
     private Set<InstanceSetType> instanceSetTypesFilter;
     private int featurePercentage;
 

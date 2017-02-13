@@ -1,6 +1,7 @@
 package td4c;
 
 import model.data.DataTable;
+import model.feature.CsvNumberRepresentation;
 import model.feature.DiscreteFeature;
 import model.feature.Feature;
 import model.instance.Instance;
@@ -56,7 +57,7 @@ public class TD4CDiscretizator {
         for (DiscreteFeature discreteFeature : discreteFeatures) {
             boolean toAdd = true;
             for (Feature existingFeature : discreteTable.getFeatures()) {
-                if (existingFeature.correlationRatio(discreteFeature) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
+                if (existingFeature.correlationRatio(discreteFeature, CsvNumberRepresentation.Integer_Representation) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
                     toAdd = false;
                     break;
                 }
@@ -145,5 +146,9 @@ public class TD4CDiscretizator {
         }
         optionalCutoffs.sort(Integer::compareTo);
         return optionalCutoffs;
+    }
+
+    public String getType() {
+        return distanceMeasure.getName();
     }
 }

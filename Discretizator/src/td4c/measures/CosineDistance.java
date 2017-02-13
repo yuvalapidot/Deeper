@@ -14,6 +14,11 @@ public class CosineDistance extends AbstractDistanceMeasure {
         return cosineDistance;
     }
 
+    @Override
+    public String getName() {
+        return "Cosine";
+    }
+
     private double cosine(double[] u, double[] v) {
         return vectorMultiplication(u, v) / (vectorialSize(u) * vectorialSize(v));
     }

@@ -14,6 +14,11 @@ public class EntropyDistance extends AbstractDistanceMeasure {
         return entropyDistance;
     }
 
+    @Override
+    public String getName() {
+        return "Entropy";
+    }
+
     private double entropy(double[] P) {
         double entropy = 0;
         for (double probability : P) {

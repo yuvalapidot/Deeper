@@ -1,3 +1,5 @@
+package creator;
+
 import model.instance.DumpInstance;
 import model.instance.InstanceSetType;
 import model.memory.Dump;

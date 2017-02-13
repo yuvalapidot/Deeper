@@ -1,5 +1,6 @@
 package model.data;
 
+import model.feature.CsvNumberRepresentation;
 import model.feature.Feature;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
@@ -99,8 +100,7 @@ public class DataTable {
     private Feature getCreateFeature(Object key, Object defaultValue) {
         Feature feature = featureMap.get(key);
         if (feature == null) {
-            // TODO - change to this instead of null.
-            feature = new Feature(key, defaultValue, null);
+            feature = new Feature(key, defaultValue, this);
             features.add(feature);
             featureMap.put(key, feature);
         }
@@ -120,12 +120,12 @@ public class DataTable {
 //        }
 //    }
 
-    public double getTimeFrequencyValue(Instance instance, Feature<Integer> feature) {
-        Integer value = feature.getValue(instance);
+    public double getTimeFrequencyValue(Instance instance, Feature feature) {
+        Integer value = (Integer) feature.getValue(instance);
         return value.doubleValue() / getInstanceMaximumTermFrequency(instance);
     }
 
-    public double getTimeFrequencyInverseDocumentFrequencyValue(Instance instance, Feature<Integer> feature) {
+    public double getTimeFrequencyInverseDocumentFrequencyValue(Instance instance, Feature feature) {
         double timeFrequencyValue = getTimeFrequencyValue(instance, feature);
         return timeFrequencyValue * getInverseDocumentFrequency(feature);
     }
@@ -154,7 +154,7 @@ public class DataTable {
         return idf;
     }
 
-    public void removeCorrelatedFeatures(double threshold) {
+    public void removeCorrelatedFeatures(double threshold, CsvNumberRepresentation representation) {
         Set<Feature> featuresToRemove = new HashSet<>();
         for (Feature testedFeature : features) {
             for (Feature approvedFeature : features) {
@@ -164,7 +164,7 @@ public class DataTable {
                 if (testedFeature == approvedFeature) {
                     break;
                 }
-                if (approvedFeature.correlationRatio(testedFeature) > threshold) {
+                if (approvedFeature.correlationRatio(testedFeature, representation) > threshold) {
                     featuresToRemove.add(testedFeature);
                 }
             }

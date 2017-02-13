@@ -1,6 +1,7 @@
 package ranker;
 
 import model.data.DataTable;
+import model.feature.CsvNumberRepresentation;
 import model.feature.Feature;
 import model.feature.RankedFeature;
 import model.instance.Instance;
@@ -23,16 +24,17 @@ public class Ranker {
         this.rankerMethod = rankerMethod;
     }
 
-    public DataTable rankTable(DataTable table, double threshold) {
+    public DataTable rankTable(DataTable table, double threshold, CsvNumberRepresentation representation) {
         DataTable rankedTable = new DataTable();
         List<RankedFeature> rankedFeatures = new ArrayList<>();
         Feature classFeature = null;
         int rankedFeatureCount = 0;
+        log.info("Ranking " + table.getFeatures().size() + " features as " + representation + ".");
         for (Feature feature : table.getFeatures()) {
             if (feature.getKey().equals("Class")) {
                 classFeature = feature;
             } else {
-                RankedFeature rankedFeature = rank(feature, table.getInstances());
+                RankedFeature rankedFeature = rank(feature, table.getInstances(), representation);
                 if (rankedFeature.getRank() > threshold) {
                     rankedFeature.setDataTable(rankedTable);
                     rankedFeatures.add(rankedFeature);
@@ -41,14 +43,17 @@ public class Ranker {
             }
         }
         log.info(rankedFeatureCount + " features out of " + table.getFeatures().size() + " were ranked above threshold (" + threshold + ")");
+        log.info("Sorting features according to rank.");
         rankedFeatures.sort(RankedFeature::compareTo);
         Collections.reverse(rankedFeatures);
+        log.info("Finished sorting features according to rank.");
+        log.info("Removing highly correlated features.");
         int numberOfInstances = table.getInstances().size();
         int addedFeatureCount = 0;
         for (RankedFeature rankedFeature : rankedFeatures) {
             boolean toAdd = true;
             for (Feature existingFeature : rankedTable.getFeatures()) {
-                if (existingFeature.correlationRatio(rankedFeature) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
+                if (existingFeature.correlationRatio(rankedFeature, representation) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
                     toAdd = false;
                     break;
                 }
@@ -63,7 +68,7 @@ public class Ranker {
         return rankedTable;
     }
 
-    private RankedFeature rank(Feature feature, Set<Instance> instances) {
-        return new RankedFeature(feature, rankerMethod.rank(feature, instances));
+    private RankedFeature rank(Feature feature, Set<Instance> instances, CsvNumberRepresentation representation) {
+        return new RankedFeature(feature, rankerMethod.rank(feature, instances, representation));
     }
 }
