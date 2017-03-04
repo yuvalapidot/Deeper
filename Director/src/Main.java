@@ -36,7 +36,7 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
 
     private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Datasets\\";
+    private static final String datasetOutputPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Datasets\\Time Series\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
@@ -63,31 +63,44 @@ public class Main {
     private static String tempRepresentation;
 
     public static void main(String[] args) throws IOException {
-        tempArgumentConsideration = "No Argument Consideration";
-        int[] ns = {1, 2, 3, 4};
-        int[][] nss = {{1}, {2}, {3}, {4}, ns};
-        int minSequencelength = 0;
-        int maxSequencelength = 4;
-        int minSupport = 100;
-        int maxSupport = 5000;
-        double trainPercentage = 0.8;
-        int[] binsNumbers = new int[] {2, 3, 4, 5, 6, 7};
-        double threshold = 0.05;
-        BatchType batchType = BatchType.State_Batch;
-        for (int[] n : nss) {
-            DataTable table = createDataTable(n);
-            experiment1(table, trainPercentage, binsNumbers, threshold);
-            experiment2(table, binsNumbers, threshold);
-            experiment3(table, binsNumbers, threshold);
+        createTimeSeriesDataSets();
+//        tempArgumentConsideration = "No Argument Consideration";
+//        int[] ns = {1, 2, 3, 4};
+//        int[][] nss = {{1}, {2}, {3}, {4}, ns};
+//        int minSequencelength = 0;
+//        int maxSequencelength = 4;
+//        int minSupport = 100;
+//        int maxSupport = 5000;
+//        double trainPercentage = 0.8;
+//        int[] binsNumbers = new int[] {2, 3, 4, 5, 6, 7};
+//        double threshold = 0.05;
+//        BatchType batchType = BatchType.State_Batch;
+//        for (int[] n : nss) {
+//            DataTable table = createDataTable(n);
+//            experiment1(table, trainPercentage, binsNumbers, threshold);
+//            experiment2(table, binsNumbers, threshold);
+//            experiment3(table, binsNumbers, threshold);
+//        }
+//        DataTable table = createDataTable(minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
+//        experiment1(table, trainPercentage, binsNumbers, threshold);
+//        experiment2(table, binsNumbers, threshold);
+//        experiment3(table, binsNumbers, threshold);
+//        table = createDataTable(ns, minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
+//        experiment1(table, trainPercentage, binsNumbers, threshold);
+//        experiment2(table, binsNumbers, threshold);
+//        experiment3(table, binsNumbers, threshold);
+    }
+
+    private static void createTimeSeriesDataSets() throws IOException {
+        DataTableCsvWriter writer = new DataTableCsvWriter();
+        for (String benign : benignNames) {
+            DataTable table = createDataTable(jsonsDirectoryPath, new String[] {benign}, new String[] {}, 100, null, 1, 4, 10, 20000, BatchType.State_Batch);
+            writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + benign + ".csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
         }
-        DataTable table = createDataTable(minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
-        experiment1(table, trainPercentage, binsNumbers, threshold);
-        experiment2(table, binsNumbers, threshold);
-        experiment3(table, binsNumbers, threshold);
-        table = createDataTable(ns, minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
-        experiment1(table, trainPercentage, binsNumbers, threshold);
-        experiment2(table, binsNumbers, threshold);
-        experiment3(table, binsNumbers, threshold);
+        for (String malicious: maliciousNames) {
+            DataTable table = createDataTable(jsonsDirectoryPath, new String[] {}, new String[] {malicious}, 100, new int[] {}, 1, 4, 10, 20000, BatchType.State_Batch);
+            writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + malicious + ".csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
+        }
     }
 
     private static void experiment1(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
