@@ -2,6 +2,8 @@ import creator.DataTableCreator;
 import creator.DumpInstanceCreator;
 import creator.DumpToDataTableCreator;
 import extractor.CallGramExtractor;
+import extractor.DumpStateExtractor;
+import extractor.DumpTimestampExtractor;
 import extractor.SequenceExtractor;
 import model.data.DataTable;
 import model.feature.Feature;
@@ -35,8 +37,8 @@ public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
 
-    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Datasets\\Time Series\\";
+    private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\Jsons";
+    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\Datasets\\Time Series\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
@@ -92,15 +94,9 @@ public class Main {
     }
 
     private static void createTimeSeriesDataSets() throws IOException {
+        DataTable table = createDataTable(0, 4, 25, 200000, BatchType.State_Batch);
         DataTableCsvWriter writer = new DataTableCsvWriter();
-        for (String benign : benignNames) {
-            DataTable table = createDataTable(jsonsDirectoryPath, new String[] {benign}, new String[] {}, 100, null, 1, 4, 10, 20000, BatchType.State_Batch);
-            writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + benign + ".csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
-        }
-        for (String malicious: maliciousNames) {
-            DataTable table = createDataTable(jsonsDirectoryPath, new String[] {}, new String[] {malicious}, 100, new int[] {}, 1, 4, 10, 20000, BatchType.State_Batch);
-            writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + malicious + ".csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
-        }
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + "Result.csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
     }
 
     private static void experiment1(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
@@ -219,7 +215,7 @@ public class Main {
         tempMinSupport = minSupport;
         tempMaxSupport = maxSupport;
         log.info("Finished performing data table creation process.");
-        return table;
+        return rankDataTable(table, new Ranker(new FishersScoreRanker()), 0, CsvNumberRepresentation.Integer_Representation);
     }
 
     private static int min(int[] arr) {
@@ -329,6 +325,8 @@ public class Main {
     private static DataTable getDataTable(List<DumpInstance> instances, int[] ns, int minSequenceLength, int maxSequenceLength, int minSupport, int maxSupport, BatchType batch) {
         log.info("Going to generate " + tempSequenceType + " data table.");
         DataTableCreator creator = new DumpToDataTableCreator(instances);
+        creator.addExtractor(new DumpStateExtractor());
+        creator.addExtractor(new DumpTimestampExtractor());
         if (ns != null) {
             for (int i : ns) {
                 creator.addExtractor(new CallGramExtractor(i));
@@ -338,6 +336,7 @@ public class Main {
             creator.addExtractor(new SequenceExtractor(minSupport, maxSupport, minSequenceLength, maxSequenceLength, batch.getSize()));
         }
         DataTable table = creator.createDataTable();
+
         log.info("Finished generating " + tempSequenceType + " data table.");
         return table;
     }

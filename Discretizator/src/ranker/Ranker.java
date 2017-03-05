@@ -33,6 +33,8 @@ public class Ranker {
         for (Feature feature : table.getFeatures()) {
             if (feature.getKey().equals("Class")) {
                 classFeature = feature;
+            } else if (feature.getKey().equals("Scenario") || feature.getKey().equals("Timestamp")) {
+                rankedTable.put(feature);
             } else {
                 RankedFeature rankedFeature = rank(feature, table.getInstances(), representation);
                 if (rankedFeature.getRank() > threshold) {

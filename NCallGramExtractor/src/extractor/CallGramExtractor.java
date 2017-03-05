@@ -16,7 +16,7 @@ import java.util.Map;
 public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
     private final int n;
-    private boolean trainDiffFeature = true;
+    private boolean trainDiffFeature = false;
     private boolean trainBenignDiffFeature = false;
 
     public CallGramExtractor(int n) {
@@ -41,7 +41,7 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
             if (instance.getSetType().equals(InstanceSetType.TRAIN_SET)) {
                 Map<Sequence, Integer> callGrams = getDumpCallGrams(instance.getInstance());
                 for (Sequence callGram : callGrams.keySet()) {
-                    table.put(instance, new SequenceFeatureKey(callGram, 0), callGrams.get(callGram));
+                    table.put(instance, callGram, callGrams.get(callGram));
                 }
             }
         }
@@ -62,7 +62,7 @@ public class CallGramExtractor extends AbstractFeatureExtractor<DumpInstance> {
             if (instance.getSetType().equals(InstanceSetType.TEST_SET)) {
                 Map<Sequence, Integer> callGrams = getDumpCallGrams(instance.getInstance());
                 for (Sequence callGram : callGrams.keySet()) {
-                    if (!table.putIfFeatureExists(instance, new SequenceFeatureKey(callGram, 0), callGrams.get(callGram))) {
+                    if (!table.putIfFeatureExists(instance, callGram, callGrams.get(callGram))) {
                         instanceUniqueCounter++;
                     }
                 }
