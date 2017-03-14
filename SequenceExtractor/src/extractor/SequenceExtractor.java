@@ -7,6 +7,8 @@ import model.memory.Call;
 import model.memory.Process;
 import model.memory.Sequence;
 import model.memory.Thread;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import sequence.ISequenceFinder;
 import sequence.PrefixSpanSequenceFinder;
 
@@ -19,6 +21,8 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
     private int minimumSequenceLength;
     private int maximumSequenceLength;
     private int batchSize;
+
+    private final Logger log = LogManager.getLogger(SequenceExtractor.class);
 
     public SequenceExtractor(int minimumSupport, int maximumSupport, int minimumSequenceLength, int maximumSequenceLength, int batchSize) {
         this.minimumSupport = minimumSupport;
@@ -60,9 +64,9 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
         int i = 0;
         for (Set<DumpInstance> dumpBatch : getDumpsBatches()) {
             ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
-            System.out.println("Starting on " + i + " batch. Time = " + new Date().getTime());
+            log.info("Starting on " + i + " batch. Time = " + new Date().getTime());
             mapList.add(getAllDumpsSequences(dumpBatch, finder, saveToDataBase));
-            System.out.println("End on " + i + " batch. Time = " + new Date().getTime() + ". Number of sequences = " + mapList.get(i).size());
+            log.info("End on " + i + " batch. Time = " + new Date().getTime() + ". Number of sequences = " + mapList.get(i).size());
             i++;
         }
         return mapList;
@@ -72,7 +76,7 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
         int i = 0;
         for (Set<DumpInstance> dumpBatch : getDumpsBatches()) {
             ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
-            System.out.println("Starting on batch " + i + ".");
+            log.info("Starting on batch " + i + ".");
             long startTime = new Date().getTime();
             Map<Sequence, List<Pair<DumpInstance, Integer>>> batchSequences = getAllDumpsSequences(dumpBatch, finder, false);
             for (Sequence sequence : batchSequences.keySet()) {
@@ -82,7 +86,7 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
                     table.put(dumpInfo.getKey(), featureKey, featureValue);
                 }
             }
-            System.out.println("End on " + i + " batch. Time = " + (new Date().getTime() - startTime) + ". Number of sequences = " + batchSequences.size());
+            log.info("End on " + i + " batch. Time = " + (new Date().getTime() - startTime) + ". Number of sequences = " + batchSequences.size());
             System.gc();
             i++;
         }

@@ -1,12 +1,14 @@
 package ranker.rankers;
 
-import exceptions.MulticlassNotSupportedException;
 import model.feature.CsvNumberRepresentation;
 import model.feature.Feature;
 import model.instance.Instance;
 import model.instance.InstanceSetType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 public class FishersScoreRanker implements IRankerMethod {
 
@@ -14,7 +16,7 @@ public class FishersScoreRanker implements IRankerMethod {
     public double rank(Feature<Integer> feature, Set<Instance> instances, CsvNumberRepresentation representation) {
         List<String> classes = new ArrayList<>(findClasses(instances));
         if (classes.size() != 2) {
-            throw new MulticlassNotSupportedException(classes.size() + " Classes were found during Fihser's score ranking. Expected exactly 2 classes");
+            return 1;
         }
         int[] counts = new int[classes.size()];
         double[] sums = new double[classes.size()];

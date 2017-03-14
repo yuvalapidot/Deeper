@@ -38,7 +38,7 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
 
     private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\Datasets\\Time Series\\";
+    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\Datasets\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
@@ -48,13 +48,11 @@ public class Main {
     private static final Set<InstanceSetType> TRAIN_TEST = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
 
     private static String tempSequenceType;
-    private static String tempArgumentConsideration;
     private static String tempExperimentName;
 
-    private static String tempFirstTested;
-    private static String tempSecondTested;
+    private static String tempTestedBenign;
+    private static String tempTestedInfected;
 
-    private static String tempBatchType;
     private static String tempSequenceLength;
     private static int tempMinSupport;
     private static int tempMaxSupport;
@@ -65,32 +63,46 @@ public class Main {
     private static String tempRepresentation;
 
     public static void main(String[] args) throws IOException {
-        createTimeSeriesDataSets();
-//        tempArgumentConsideration = "No Argument Consideration";
-//        int[] ns = {1, 2, 3, 4};
-//        int[][] nss = {{1}, {2}, {3}, {4}, ns};
-//        int minSequencelength = 0;
-//        int maxSequencelength = 4;
-//        int minSupport = 100;
-//        int maxSupport = 5000;
-//        double trainPercentage = 0.8;
-//        int[] binsNumbers = new int[] {2, 3, 4, 5, 6, 7};
-//        double threshold = 0.05;
-//        BatchType batchType = BatchType.State_Batch;
-//        for (int[] n : nss) {
-//            DataTable table = createDataTable(n);
-//            experiment1(table, trainPercentage, binsNumbers, threshold);
-//            experiment2(table, binsNumbers, threshold);
-//            experiment3(table, binsNumbers, threshold);
-//        }
-//        DataTable table = createDataTable(minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
-//        experiment1(table, trainPercentage, binsNumbers, threshold);
-//        experiment2(table, binsNumbers, threshold);
-//        experiment3(table, binsNumbers, threshold);
-//        table = createDataTable(ns, minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
-//        experiment1(table, trainPercentage, binsNumbers, threshold);
-//        experiment2(table, binsNumbers, threshold);
-//        experiment3(table, binsNumbers, threshold);
+        int[] ns = {1, 2, 3, 4};
+        int[][] nss = {{1}, {2}, {3}, {4}, ns};
+        int minSequencelength = 0;
+        int maxSequencelength = 4;
+        int minSupport = 25;
+        int maxSupport = 50000;
+        double trainPercentage = 0.8;
+        int[] binsNumbers = new int[] {3, 4, 5, 6};
+        double threshold = 0.05;
+        BatchType batchType = BatchType.State_Batch;
+
+        {
+            DataTable table = createDataTable(minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
+            KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
+            UnknownMalwareDetection(table, binsNumbers, threshold);
+            UnknownBenignDetection(table, binsNumbers, threshold);
+            UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
+            AnomalyDetection(table, binsNumbers, threshold);
+            MalwareClassification(table, trainPercentage, binsNumbers, threshold);
+        }
+
+        for (int[] n : nss) {
+            DataTable table = createDataTable(n);
+            KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
+            UnknownMalwareDetection(table, binsNumbers, threshold);
+            UnknownBenignDetection(table, binsNumbers, threshold);
+            UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
+            AnomalyDetection(table, binsNumbers, threshold);
+            MalwareClassification(table, trainPercentage, binsNumbers, threshold);
+        }
+
+        {
+            DataTable table = createDataTable(ns, minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
+            KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
+            UnknownMalwareDetection(table, binsNumbers, threshold);
+            UnknownBenignDetection(table, binsNumbers, threshold);
+            UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
+            AnomalyDetection(table, binsNumbers, threshold);
+            MalwareClassification(table, trainPercentage, binsNumbers, threshold);
+        }
     }
 
     private static void createTimeSeriesDataSets() throws IOException {
@@ -99,10 +111,45 @@ public class Main {
         writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + "Result.csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
     }
 
-    private static void experiment1(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
-        tempExperimentName = "Test All";
-        tempFirstTested = "";
-        tempSecondTested = "";
+    private static void AnomalyDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+        tempExperimentName = "Anomaly Detection";
+        tempTestedBenign = "";
+        tempTestedInfected = "";
+        for (Instance instance : table.getInstances()) {
+            if (instance.getType().equals("Baseline")) {
+                instance.setClassification("Benign");
+            } else {
+                instance.setClassification("Anomaly");
+            }
+            instance.setSetType(InstanceSetType.TRAIN_SET);
+        }
+        outputDataTable(table, binsNumbers, threshold);
+    }
+
+    private static void MalwareClassification(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
+        tempExperimentName = "Malware Classification";
+        tempTestedBenign = "";
+        tempTestedInfected = "";
+        Map<String, Integer> countMap = new HashMap<>();
+        for (Instance instance : table.getInstances()) {
+            String type = instance.getType();
+            instance.setClassification(type);
+            countMap.putIfAbsent(type, 0);
+            int count = countMap.get(type) + 1;
+            countMap.put(type, count);
+            if (count > trainPercentage * sampleSize) {
+                instance.setSetType(InstanceSetType.TEST_SET);
+            } else {
+                instance.setSetType(InstanceSetType.TRAIN_SET);
+            }
+        }
+        outputDataTable(table, binsNumbers, threshold);
+    }
+
+    private static void KnownMalwareDetection(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
+        tempExperimentName = "Known Malware Detection";
+        tempTestedBenign = "";
+        tempTestedInfected = "";
         Map<String, Integer> countMap = new HashMap<>();
         for (Instance instance : table.getInstances()) {
             String type = instance.getType();
@@ -118,19 +165,24 @@ public class Main {
         outputDataTable(table, binsNumbers, threshold);
     }
 
-    private static void experiment2(DataTable table, int[] binsNumbers, double threshold) throws IOException {
-        tempExperimentName = "Leave One Out";
-        tempSecondTested = "";
-        leaveOneOut(table, binsNumbers, threshold, benignNames);
-        leaveOneOut(table, binsNumbers, threshold, maliciousNames);
+    private static void UnknownMalwareDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+        tempExperimentName = "Unknown Malware Detection";
+        tempTestedBenign = "";
+        leaveOneOut(table, binsNumbers, threshold, maliciousNames, false);
     }
 
-    private static void experiment3(DataTable table, int[] binsNumbers, double threshold) throws IOException {
-        tempExperimentName = "Leave Two Out";
+    private static void UnknownBenignDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+        tempExperimentName = "Unknown Benign Detection";
+        tempTestedInfected = "";
+        leaveOneOut(table, binsNumbers, threshold, benignNames, true);
+    }
+
+    private static void UnknownBenignAndMalwareDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+        tempExperimentName = "Unknown Benign & Malware Detection";
         for (String benignToTest : benignNames) {
             for (String maliciousToTest : maliciousNames) {
-                tempFirstTested = benignToTest;
-                tempSecondTested = maliciousToTest;
+                tempTestedBenign = benignToTest;
+                tempTestedInfected = maliciousToTest;
                 for (Instance instance : table.getInstances()) {
                     if (instance.getType().equals(benignToTest) | instance.getType().equals(maliciousToTest)) {
                         instance.setSetType(InstanceSetType.TEST_SET);
@@ -143,9 +195,13 @@ public class Main {
         }
     }
 
-    private static void leaveOneOut(DataTable table, int[] binsNumbers, double threshold, String[] typeNames) throws IOException {
+    private static void leaveOneOut(DataTable table, int[] binsNumbers, double threshold, String[] typeNames, boolean benignTested) throws IOException {
         for (String typeName : typeNames) {
-            tempFirstTested = typeName;
+            if (benignTested) {
+                tempTestedBenign = typeName;
+            } else {
+                tempTestedInfected = typeName;
+            }
             String classification = "Unknown";
             // Declare out as Test set type.
             for (Instance instance : table.getInstances()) {
@@ -211,7 +267,6 @@ public class Main {
             tempSequenceLength = String.valueOf(min) + ((min == max) ? "" : " to " + String.valueOf(max));
             table = getHybridDataTable(instances, ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batch);
         }
-        tempBatchType = batch.name().replace("_", " ");
         tempMinSupport = minSupport;
         tempMaxSupport = maxSupport;
         log.info("Finished performing data table creation process.");
@@ -250,13 +305,13 @@ public class Main {
     }
 
     private static String generateCsvPath() {
-        String filePath = String.join("\\", tempSequenceType, tempArgumentConsideration, tempExperimentName,
-                tempFirstTested.equals("") ? "All Tested" : tempFirstTested + (tempSecondTested.equals("") ? " Tested" : " & " + tempSecondTested + " Tested"),
-                tempBatchType, "Sequence Length " + tempSequenceLength,
-                "Support " + String.valueOf(tempMinSupport) + ((tempMinSupport == tempMaxSupport) ? "" :" to " + String.valueOf(tempMaxSupport)),
-                tempRanker, String.valueOf(tempNumberOfBins) + " Bins", tempRepresentation.replace("_", " "));
-        String fileName = String.join("-", tempSequenceType, tempArgumentConsideration, tempExperimentName,
-                tempFirstTested, tempSecondTested, tempBatchType, tempSequenceLength,
+        String filePath = String.join("\\", tempExperimentName, tempSequenceType,
+                (tempTestedBenign.isEmpty() & tempTestedInfected.isEmpty() ? "All" :
+                        tempTestedBenign.isEmpty() ? tempTestedInfected :
+                        tempTestedInfected.isEmpty() ? tempSequenceType :
+                        tempTestedBenign + " & " + tempTestedInfected) + " Tested");
+        String fileName = String.join("-", tempExperimentName, tempSequenceType,
+                tempTestedBenign, tempTestedInfected, tempSequenceLength,
                 String.valueOf(tempMinSupport), String.valueOf(tempMaxSupport), tempRanker,
                 String.valueOf(tempRankThreshold), String.valueOf(tempNumberOfBins), tempRepresentation);
         return datasetOutputPath + filePath + "\\" + fileName + ".csv";
