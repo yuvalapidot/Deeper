@@ -53,11 +53,13 @@ public class TD4CDiscretizator {
         discreteFeatures.sort(DiscreteFeature::compareTo);
         Collections.reverse(discreteFeatures);
         int numberOfInstances = table.getInstances().size();
+        double correlationRatio = 0.95;
+        double correlationThreshold = ((numberOfInstances * correlationRatio - 1) / (double) numberOfInstances);
         int addedFeatureCount = 0;
         for (DiscreteFeature discreteFeature : discreteFeatures) {
             boolean toAdd = true;
             for (Feature existingFeature : discreteTable.getFeatures()) {
-                if (existingFeature.correlationRatio(discreteFeature, CsvNumberRepresentation.Integer_Representation) > ((numberOfInstances - 1) / (double) numberOfInstances)) {
+                if (existingFeature.correlationRatio(discreteFeature, CsvNumberRepresentation.Integer_Representation) > correlationThreshold) {
                     toAdd = false;
                     break;
                 }

@@ -2,10 +2,9 @@ import creator.DataTableCreator;
 import creator.DumpInstanceCreator;
 import creator.DumpToDataTableCreator;
 import extractor.CallGramExtractor;
-import extractor.DumpStateExtractor;
-import extractor.DumpTimestampExtractor;
 import extractor.SequenceExtractor;
 import model.data.DataTable;
+import model.feature.CsvNumberRepresentation;
 import model.feature.Feature;
 import model.instance.DumpInstance;
 import model.instance.Instance;
@@ -22,7 +21,6 @@ import td4c.measures.CosineDistance;
 import td4c.measures.EntropyDistance;
 import td4c.measures.IDistanceMeasure;
 import td4c.measures.KullbackLeiblerDistance;
-import model.feature.CsvNumberRepresentation;
 import writer.DataTableCsvWriter;
 import writer.DataTableToCsvRequest;
 
@@ -38,7 +36,7 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
 
     private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\Datasets\\";
+    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\Datasets - Correlation Ratio 0.95\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
@@ -65,8 +63,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
         int[] ns = {1, 2, 3, 4};
         int[][] nss = {{1}, {2}, {3}, {4}, ns};
-        int minSequencelength = 0;
-        int maxSequencelength = 4;
+        int minSequenceLength = 0;
+        int maxSequenceLength = 4;
         int minSupport = 25;
         int maxSupport = 50000;
         double trainPercentage = 0.8;
@@ -74,18 +72,16 @@ public class Main {
         double threshold = 0.05;
         BatchType batchType = BatchType.State_Batch;
 
-        {
-            DataTable table = createDataTable(minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
-            KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
-            UnknownMalwareDetection(table, binsNumbers, threshold);
-            UnknownBenignDetection(table, binsNumbers, threshold);
-            UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
-            AnomalyDetection(table, binsNumbers, threshold);
-            MalwareClassification(table, trainPercentage, binsNumbers, threshold);
-        }
+        DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+        KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
+        UnknownMalwareDetection(table, binsNumbers, threshold);
+        UnknownBenignDetection(table, binsNumbers, threshold);
+        UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
+        AnomalyDetection(table, binsNumbers, threshold);
+        MalwareClassification(table, trainPercentage, binsNumbers, threshold);
 
         for (int[] n : nss) {
-            DataTable table = createDataTable(n);
+            table = createDataTable(n);
             KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
             UnknownMalwareDetection(table, binsNumbers, threshold);
             UnknownBenignDetection(table, binsNumbers, threshold);
@@ -94,15 +90,13 @@ public class Main {
             MalwareClassification(table, trainPercentage, binsNumbers, threshold);
         }
 
-        {
-            DataTable table = createDataTable(ns, minSequencelength, maxSequencelength, minSupport, maxSupport, batchType);
-            KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
-            UnknownMalwareDetection(table, binsNumbers, threshold);
-            UnknownBenignDetection(table, binsNumbers, threshold);
-            UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
-            AnomalyDetection(table, binsNumbers, threshold);
-            MalwareClassification(table, trainPercentage, binsNumbers, threshold);
-        }
+        table = createDataTable(ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+        KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
+        UnknownMalwareDetection(table, binsNumbers, threshold);
+        UnknownBenignDetection(table, binsNumbers, threshold);
+        UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
+        AnomalyDetection(table, binsNumbers, threshold);
+        MalwareClassification(table, trainPercentage, binsNumbers, threshold);
     }
 
     private static void createTimeSeriesDataSets() throws IOException {
@@ -118,8 +112,10 @@ public class Main {
         for (Instance instance : table.getInstances()) {
             if (instance.getType().equals("Baseline")) {
                 instance.setClassification("Benign");
+                table.put(instance, "Class", "Benign");
             } else {
                 instance.setClassification("Anomaly");
+                table.put(instance, "Class", "Anomaly");
             }
             instance.setSetType(InstanceSetType.TRAIN_SET);
         }
@@ -134,6 +130,7 @@ public class Main {
         for (Instance instance : table.getInstances()) {
             String type = instance.getType();
             instance.setClassification(type);
+            table.put(instance, "Class", type);
             countMap.putIfAbsent(type, 0);
             int count = countMap.get(type) + 1;
             countMap.put(type, count);
@@ -308,7 +305,7 @@ public class Main {
         String filePath = String.join("\\", tempExperimentName, tempSequenceType,
                 (tempTestedBenign.isEmpty() & tempTestedInfected.isEmpty() ? "All" :
                         tempTestedBenign.isEmpty() ? tempTestedInfected :
-                        tempTestedInfected.isEmpty() ? tempSequenceType :
+                        tempTestedInfected.isEmpty() ? tempTestedBenign :
                         tempTestedBenign + " & " + tempTestedInfected) + " Tested");
         String fileName = String.join("-", tempExperimentName, tempSequenceType,
                 tempTestedBenign, tempTestedInfected, tempSequenceLength,
@@ -380,8 +377,8 @@ public class Main {
     private static DataTable getDataTable(List<DumpInstance> instances, int[] ns, int minSequenceLength, int maxSequenceLength, int minSupport, int maxSupport, BatchType batch) {
         log.info("Going to generate " + tempSequenceType + " data table.");
         DataTableCreator creator = new DumpToDataTableCreator(instances);
-        creator.addExtractor(new DumpStateExtractor());
-        creator.addExtractor(new DumpTimestampExtractor());
+//        creator.addExtractor(new DumpStateExtractor());
+//        creator.addExtractor(new DumpTimestampExtractor());
         if (ns != null) {
             for (int i : ns) {
                 creator.addExtractor(new CallGramExtractor(i));
