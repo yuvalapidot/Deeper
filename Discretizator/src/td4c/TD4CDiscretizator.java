@@ -32,7 +32,7 @@ public class TD4CDiscretizator {
         }
     }
 
-    public DataTable discrete(DataTable table, int bins, double threshold) {
+    public DataTable discrete(DataTable table, int bins, double threshold, double correlationRatio) {
         DataTable discreteTable = new DataTable();
         List<DiscreteFeature> discreteFeatures = new ArrayList<>();
         Feature classFeature = null;
@@ -53,7 +53,6 @@ public class TD4CDiscretizator {
         discreteFeatures.sort(DiscreteFeature::compareTo);
         Collections.reverse(discreteFeatures);
         int numberOfInstances = table.getInstances().size();
-        double correlationRatio = 0.95;
         double correlationThreshold = ((numberOfInstances * correlationRatio - 1) / (double) numberOfInstances);
         int addedFeatureCount = 0;
         for (DiscreteFeature discreteFeature : discreteFeatures) {

@@ -60,6 +60,11 @@
             <artifactId>Discretizator</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>WekaHandler</groupId>
+            <artifactId>WekaHandler</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

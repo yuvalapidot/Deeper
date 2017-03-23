@@ -36,7 +36,7 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
 
     private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\Datasets - Correlation Ratio 0.95\\";
+    private static final String datasetOutputPath = "D:\\Deeper-Test\\Datasets\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
@@ -44,6 +44,8 @@ public class Main {
     private static final int sampleSize = 100;
 
     private static final Set<InstanceSetType> TRAIN_TEST = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET, InstanceSetType.TEST_SET));
+    private static final Set<InstanceSetType> TRAIN = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TRAIN_SET));
+    private static final Set<InstanceSetType> TEST = new LinkedHashSet<>(Arrays.asList(InstanceSetType.TEST_SET));
 
     private static String tempSequenceType;
     private static String tempExperimentName;
@@ -57,46 +59,54 @@ public class Main {
 
     private static String tempRanker;
     private static double tempRankThreshold;
+    private static double tempCorrelationRatio;
     private static int tempNumberOfBins;
     private static String tempRepresentation;
 
+    private static WekaEvaluator evaluator = new WekaEvaluator();
+
     public static void main(String[] args) throws IOException {
         int[] ns = {1, 2, 3, 4};
-        int[][] nss = {{1}, {2}, {3}, {4}, ns};
+//        int[][] nss = {{1}, {2}, {3}, {4}, ns};
+        int[][] nss = {ns};
         int minSequenceLength = 0;
         int maxSequenceLength = 4;
-        int minSupport = 25;
+        int[] minSupports = {100};
         int maxSupport = 50000;
-        double trainPercentage = 0.8;
-        int[] binsNumbers = new int[] {3, 4, 5, 6};
-        double threshold = 0.05;
+        int[] binsNumbers = new int[] {3, 4, 5, 6 ,7};
+        double[] thresholds = {0, 0.1, 0.5, 1};
+        double[] correlationRatios = {1, 0.95, 0.9, 0.85, 0.8};
         BatchType batchType = BatchType.State_Batch;
 
-        DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
-        KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
-        UnknownMalwareDetection(table, binsNumbers, threshold);
-        UnknownBenignDetection(table, binsNumbers, threshold);
-        UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
-        AnomalyDetection(table, binsNumbers, threshold);
-        MalwareClassification(table, trainPercentage, binsNumbers, threshold);
+        for (int minSupport : minSupports) {
+            DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+//            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+//            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
+            UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
+//            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 
-        for (int[] n : nss) {
-            table = createDataTable(n);
-            KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
-            UnknownMalwareDetection(table, binsNumbers, threshold);
-            UnknownBenignDetection(table, binsNumbers, threshold);
-            UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
-            AnomalyDetection(table, binsNumbers, threshold);
-            MalwareClassification(table, trainPercentage, binsNumbers, threshold);
+//            for (int[] n : nss) {
+//                table = createDataTable(n);
+//                KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+//                UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//                UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
+//                UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//                AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
+//                MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+//            }
+//
+//            table = createDataTable(ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+//            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+//            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
+//            UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
+//            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+
+            evaluator.printBest();
         }
-
-        table = createDataTable(ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
-        KnownMalwareDetection(table, trainPercentage, binsNumbers, threshold);
-        UnknownMalwareDetection(table, binsNumbers, threshold);
-        UnknownBenignDetection(table, binsNumbers, threshold);
-        UnknownBenignAndMalwareDetection(table, binsNumbers, threshold);
-        AnomalyDetection(table, binsNumbers, threshold);
-        MalwareClassification(table, trainPercentage, binsNumbers, threshold);
     }
 
     private static void createTimeSeriesDataSets() throws IOException {
@@ -105,7 +115,7 @@ public class Main {
         writer.dataTableToCsv(new DataTableToCsvRequest(table, datasetOutputPath + "Result.csv", CsvNumberRepresentation.Integer_Representation, TRAIN_TEST));
     }
 
-    private static void AnomalyDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+    private static void AnomalyDetection(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
         tempExperimentName = "Anomaly Detection";
         tempTestedBenign = "";
         tempTestedInfected = "";
@@ -119,10 +129,10 @@ public class Main {
             }
             instance.setSetType(InstanceSetType.TRAIN_SET);
         }
-        outputDataTable(table, binsNumbers, threshold);
+        outputDataTable(table, binsNumbers, thresholds, correlationRatios);
     }
 
-    private static void MalwareClassification(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
+    private static void MalwareClassification(DataTable table, double trainPercentage, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
         tempExperimentName = "Malware Classification";
         tempTestedBenign = "";
         tempTestedInfected = "";
@@ -140,10 +150,10 @@ public class Main {
                 instance.setSetType(InstanceSetType.TRAIN_SET);
             }
         }
-        outputDataTable(table, binsNumbers, threshold);
+        outputDataTable(table, binsNumbers, thresholds, correlationRatios);
     }
 
-    private static void KnownMalwareDetection(DataTable table, double trainPercentage, int[] binsNumbers, double threshold) throws IOException {
+    private static void KnownMalwareDetection(DataTable table, double trainPercentage, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
         tempExperimentName = "Known Malware Detection";
         tempTestedBenign = "";
         tempTestedInfected = "";
@@ -159,22 +169,23 @@ public class Main {
                 instance.setSetType(InstanceSetType.TRAIN_SET);
             }
         }
-        outputDataTable(table, binsNumbers, threshold);
+        outputDataTable(table, binsNumbers, thresholds, correlationRatios);
     }
 
-    private static void UnknownMalwareDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+    private static void UnknownMalwareDetection(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
         tempExperimentName = "Unknown Malware Detection";
         tempTestedBenign = "";
-        leaveOneOut(table, binsNumbers, threshold, maliciousNames, false);
+        leaveOneOut(table, binsNumbers, thresholds, correlationRatios, maliciousNames, false);
     }
 
-    private static void UnknownBenignDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+    private static void UnknownBenignDetection(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
         tempExperimentName = "Unknown Benign Detection";
         tempTestedInfected = "";
-        leaveOneOut(table, binsNumbers, threshold, benignNames, true);
+        leaveOneOut(table, binsNumbers, thresholds, correlationRatios, benignNames, true);
     }
 
-    private static void UnknownBenignAndMalwareDetection(DataTable table, int[] binsNumbers, double threshold) throws IOException {
+    private static void UnknownBenignAndMalwareDetection(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
+        Map<String, List<String[]>> map = new LinkedHashMap<>();
         tempExperimentName = "Unknown Benign & Malware Detection";
         for (String benignToTest : benignNames) {
             for (String maliciousToTest : maliciousNames) {
@@ -187,12 +198,22 @@ public class Main {
                         instance.setSetType(InstanceSetType.TRAIN_SET);
                     }
                 }
-                outputDataTable(table, binsNumbers, threshold);
+                for (String[] strings : outputDataTable(table, binsNumbers, thresholds, correlationRatios)) {
+                    map.putIfAbsent(strings[0], new ArrayList<>());
+                    map.get(strings[0]).add(new String[] {strings[1], strings[2]});
+                }
+            }
+        }
+        for (String configuration : map.keySet()) {
+            try {
+                evaluator.evaluateOnConfiguration(configuration, map.get(configuration));
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
-    private static void leaveOneOut(DataTable table, int[] binsNumbers, double threshold, String[] typeNames, boolean benignTested) throws IOException {
+    private static void leaveOneOut(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios, String[] typeNames, boolean benignTested) throws IOException {
         for (String typeName : typeNames) {
             if (benignTested) {
                 tempTestedBenign = typeName;
@@ -228,7 +249,7 @@ public class Main {
                     }
                 }
             }
-            outputDataTable(table, binsNumbers, threshold);
+            outputDataTable(table, binsNumbers, thresholds, correlationRatios);
         }
     }
 
@@ -267,7 +288,7 @@ public class Main {
         tempMinSupport = minSupport;
         tempMaxSupport = maxSupport;
         log.info("Finished performing data table creation process.");
-        return rankDataTable(table, new Ranker(new FishersScoreRanker()), 0, CsvNumberRepresentation.Integer_Representation);
+        return rankDataTable(table, new Ranker(new FishersScoreRanker()), 0, CsvNumberRepresentation.Integer_Representation, 1);
     }
 
     private static int min(int[] arr) {
@@ -290,18 +311,28 @@ public class Main {
         return max;
     }
 
-    private static void outputDataTable(DataTable table, int[] binsNumbers, double threshold) throws IOException {
-        Ranker ranker = new Ranker(new FishersScoreRanker());
-        rankAndWriteDataTable(table, ranker, threshold);
-        IDistanceMeasure[] measures = {new EntropyDistance(), new CosineDistance(), new KullbackLeiblerDistance()};
-        for (IDistanceMeasure measure : measures) {
-            for (int bins : binsNumbers) {
-                discreteAndWriteDataTable(table, new TD4CDiscretizator(table.getInstances(), measure), bins, threshold);
+    private static List<String[]> outputDataTable(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
+        List<String[]> keyPath = new ArrayList<>();
+        for (double threshold : thresholds) {
+            for (double correlationRatio : correlationRatios) {
+                Ranker ranker = new Ranker(new FishersScoreRanker());
+                keyPath.addAll(rankAndWriteDataTable(table, ranker, threshold, correlationRatio));
+                IDistanceMeasure[] measures = {
+                        new EntropyDistance(),
+                        new CosineDistance(),
+                        new KullbackLeiblerDistance()
+                };
+                for (IDistanceMeasure measure : measures) {
+                    for (int bins : binsNumbers) {
+                        keyPath.add(discreteAndWriteDataTable(table, new TD4CDiscretizator(table.getInstances(), measure), bins, threshold, correlationRatio));
+                    }
+                }
             }
         }
+        return keyPath;
     }
 
-    private static String generateCsvPath() {
+    private static String generateCsvPath(String postfix) {
         String filePath = String.join("\\", tempExperimentName, tempSequenceType,
                 (tempTestedBenign.isEmpty() & tempTestedInfected.isEmpty() ? "All" :
                         tempTestedBenign.isEmpty() ? tempTestedInfected :
@@ -310,53 +341,69 @@ public class Main {
         String fileName = String.join("-", tempExperimentName, tempSequenceType,
                 tempTestedBenign, tempTestedInfected, tempSequenceLength,
                 String.valueOf(tempMinSupport), String.valueOf(tempMaxSupport), tempRanker,
-                String.valueOf(tempRankThreshold), String.valueOf(tempNumberOfBins), tempRepresentation);
-        return datasetOutputPath + filePath + "\\" + fileName + ".csv";
+                String.valueOf(tempCorrelationRatio), String.valueOf(tempRankThreshold), String.valueOf(tempNumberOfBins), tempRepresentation);
+        return datasetOutputPath + filePath + "\\" + fileName + "_" + postfix + ".csv";
     }
 
-    private static void discreteAndWriteDataTable(DataTable table, TD4CDiscretizator discretizator, int bins, double threshold) throws IOException {
-        DataTable discreteTable = discreteDataTable(table, discretizator, bins, threshold);
-        writeDataTable(discreteTable,CsvNumberRepresentation.Integer_Representation);
+    private static String generateUniqueConfigurationKey() {
+        return String.join("-", tempExperimentName, tempSequenceType,
+                tempSequenceLength, String.valueOf(tempMinSupport), String.valueOf(tempMaxSupport), tempRanker,
+                String.valueOf(tempCorrelationRatio), String.valueOf(tempRankThreshold), String.valueOf(tempNumberOfBins), tempRepresentation);
     }
 
-    private static DataTable discreteDataTable(DataTable table, TD4CDiscretizator discretizator, int bins, double threshold) throws IOException {
+    private static String[] discreteAndWriteDataTable(DataTable table, TD4CDiscretizator discretizator, int bins, double threshold, double correlationRatio) throws IOException {
+        DataTable discreteTable = discreteDataTable(table, discretizator, bins, threshold, correlationRatio);
+        return writeDataTable(discreteTable,CsvNumberRepresentation.Integer_Representation);
+    }
+
+    private static DataTable discreteDataTable(DataTable table, TD4CDiscretizator discretizator, int bins, double threshold, double correlationRatio) throws IOException {
         log.info("Going to discrete table with " + discretizator.getType() + " discretizator and " + bins + " bins.");
-        DataTable discreteTable = discretizator.discrete(table, bins, threshold);
+        DataTable discreteTable = discretizator.discrete(table, bins, threshold, correlationRatio);
         log.info("Finished discretion of table with " + discretizator.getType() + " discretizator and " + bins + " bins.");
         tempRanker = discretizator.getType();
         tempNumberOfBins = bins;
         tempRankThreshold = threshold;
+        tempCorrelationRatio = correlationRatio;
         return discreteTable;
     }
 
-    private static void rankAndWriteDataTable(DataTable table, Ranker ranker, double threshold) throws IOException {
-        DataTable rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Binary_Representation);
-        writeDataTable(rankedTable, CsvNumberRepresentation.Binary_Representation);
-        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Integer_Representation);
-        writeDataTable(rankedTable, CsvNumberRepresentation.Integer_Representation);
-        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TF_Representation);
-        writeDataTable(rankedTable, CsvNumberRepresentation.TF_Representation);
-        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TFIDF_Representation);
-        writeDataTable(rankedTable, CsvNumberRepresentation.TFIDF_Representation);
+    private static List<String[]> rankAndWriteDataTable(DataTable table, Ranker ranker, double threshold, double correlationRatio) throws IOException {
+        List<String[]> keyPath = new ArrayList<>();
+        DataTable rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Binary_Representation, correlationRatio);
+        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Binary_Representation));
+        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Integer_Representation, correlationRatio);
+        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Integer_Representation));
+        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TF_Representation, correlationRatio);
+        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TF_Representation));
+        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TFIDF_Representation, correlationRatio);
+        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TFIDF_Representation));
+        return keyPath;
     }
 
-    private static DataTable rankDataTable(DataTable table, Ranker ranker, double threshold, CsvNumberRepresentation representation) throws IOException {
+    private static DataTable rankDataTable(DataTable table, Ranker ranker, double threshold, CsvNumberRepresentation representation, double correlationRatio) throws IOException {
         log.info("Going to rank table.");
-        DataTable rankedTable = ranker.rankTable(table, threshold, representation);
+        DataTable rankedTable = ranker.rankTable(table, threshold, representation, correlationRatio);
         log.info("Finished ranking table.");
         tempRanker = "Fisher's Score";
         tempNumberOfBins = 0;
         tempRankThreshold = threshold;
+        tempCorrelationRatio = correlationRatio;
         return rankedTable;
     }
 
-    private static void writeDataTable(DataTable table, CsvNumberRepresentation representation) throws IOException {
+    private static String[] writeDataTable(DataTable table, CsvNumberRepresentation representation) throws IOException {
         tempRepresentation = representation.name().replace("_", " ");
-        String path = generateCsvPath();
-        log.info("Going to write table to path " + path + ".");
+        String trainPath = generateCsvPath("Train");
+        String testPath = generateCsvPath("Test");
+//        String path = generateCsvPath("");
+        String key = generateUniqueConfigurationKey();
+        log.info("Going to write table to path " + trainPath + ".");
         DataTableCsvWriter writer = new DataTableCsvWriter();
-        writer.dataTableToCsv(new DataTableToCsvRequest(table, path, representation, TRAIN_TEST));
-        log.info("Finished writing table to path " + path + ".");
+//        writer.dataTableToCsv(new DataTableToCsvRequest(table, path, representation, TRAIN_TEST));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, trainPath, representation, TRAIN));
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, testPath, representation, TEST));
+        log.info("Finished writing table to path " + trainPath + ".");
+        return new String[] {key, trainPath, testPath};
     }
 
     private static DataTable getNGramDataTable(List<DumpInstance> instances, int[] ns) {
