@@ -35,8 +35,8 @@ public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
 
-    private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "D:\\Deeper-Test\\Datasets\\";
+    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Jsons";
+    private static final String datasetOutputPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Datasets Best Configurations\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
     private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
@@ -73,19 +73,20 @@ public class Main {
         int maxSequenceLength = 4;
         int[] minSupports = {100};
         int maxSupport = 50000;
-        int[] binsNumbers = new int[] {3, 4, 5, 6 ,7};
-        double[] thresholds = {0, 0.1, 0.5, 1};
-        double[] correlationRatios = {1, 0.95, 0.9, 0.85, 0.8};
+        int[] binsNumbers = new int[] {3, 4};
+        double[] thresholds = {0, 0.5};
+        double[] correlationRatios = {1, 0.9, 0.8};
+        double trainPercentage = 0.8;
         BatchType batchType = BatchType.State_Batch;
-
+        Map<String, List<String[]>> map = new LinkedHashMap<>();
         for (int minSupport : minSupports) {
             DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
-//            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 //            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
 //            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
-            UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+//            map.putAll(UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios));
 //            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
-//            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 
 //            for (int[] n : nss) {
 //                table = createDataTable(n);
@@ -104,9 +105,18 @@ public class Main {
 //            UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
 //            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
 //            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
-
-            evaluator.printBest();
         }
+//        int counter = 0;
+//        for (String configuration : map.keySet()) {
+//            counter++;
+//            log.debug("Starting evaluating " + counter + " out of " + map.size() + " configurations.");
+//            try {
+//                evaluator.evaluateOnConfiguration(configuration, map.get(configuration));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        evaluator.printBest();
     }
 
     private static void createTimeSeriesDataSets() throws IOException {
@@ -184,7 +194,7 @@ public class Main {
         leaveOneOut(table, binsNumbers, thresholds, correlationRatios, benignNames, true);
     }
 
-    private static void UnknownBenignAndMalwareDetection(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
+    private static Map<String, List<String[]>> UnknownBenignAndMalwareDetection(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios) throws IOException {
         Map<String, List<String[]>> map = new LinkedHashMap<>();
         tempExperimentName = "Unknown Benign & Malware Detection";
         for (String benignToTest : benignNames) {
@@ -198,19 +208,14 @@ public class Main {
                         instance.setSetType(InstanceSetType.TRAIN_SET);
                     }
                 }
-                for (String[] strings : outputDataTable(table, binsNumbers, thresholds, correlationRatios)) {
-                    map.putIfAbsent(strings[0], new ArrayList<>());
-                    map.get(strings[0]).add(new String[] {strings[1], strings[2]});
-                }
+                outputDataTable(table, binsNumbers, thresholds, correlationRatios);
+//                for (String[] strings : outputDataTable(table, binsNumbers, thresholds, correlationRatios)) {
+//                    map.putIfAbsent(strings[0], new ArrayList<>());
+//                    map.get(strings[0]).add(new String[] {strings[1], strings[2]});
+//                }
             }
         }
-        for (String configuration : map.keySet()) {
-            try {
-                evaluator.evaluateOnConfiguration(configuration, map.get(configuration));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        return map;
     }
 
     private static void leaveOneOut(DataTable table, int[] binsNumbers, double[] thresholds, double[] correlationRatios, String[] typeNames, boolean benignTested) throws IOException {
@@ -318,9 +323,9 @@ public class Main {
                 Ranker ranker = new Ranker(new FishersScoreRanker());
                 keyPath.addAll(rankAndWriteDataTable(table, ranker, threshold, correlationRatio));
                 IDistanceMeasure[] measures = {
-                        new EntropyDistance(),
+//                        new EntropyDistance(),
                         new CosineDistance(),
-                        new KullbackLeiblerDistance()
+//                        new KullbackLeiblerDistance()
                 };
                 for (IDistanceMeasure measure : measures) {
                     for (int bins : binsNumbers) {
@@ -342,7 +347,7 @@ public class Main {
                 tempTestedBenign, tempTestedInfected, tempSequenceLength,
                 String.valueOf(tempMinSupport), String.valueOf(tempMaxSupport), tempRanker,
                 String.valueOf(tempCorrelationRatio), String.valueOf(tempRankThreshold), String.valueOf(tempNumberOfBins), tempRepresentation);
-        return datasetOutputPath + filePath + "\\" + fileName + "_" + postfix + ".csv";
+        return datasetOutputPath + filePath + "\\" + fileName + ((postfix != null) ? "_" + postfix : "") + ".csv";
     }
 
     private static String generateUniqueConfigurationKey() {
@@ -371,10 +376,10 @@ public class Main {
         List<String[]> keyPath = new ArrayList<>();
         DataTable rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Binary_Representation, correlationRatio);
         keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Binary_Representation));
-        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Integer_Representation, correlationRatio);
-        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Integer_Representation));
-        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TF_Representation, correlationRatio);
-        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TF_Representation));
+//        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Integer_Representation, correlationRatio);
+//        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Integer_Representation));
+//        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TF_Representation, correlationRatio);
+//        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TF_Representation));
         rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TFIDF_Representation, correlationRatio);
         keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TFIDF_Representation));
         return keyPath;
@@ -393,17 +398,17 @@ public class Main {
 
     private static String[] writeDataTable(DataTable table, CsvNumberRepresentation representation) throws IOException {
         tempRepresentation = representation.name().replace("_", " ");
-        String trainPath = generateCsvPath("Train");
-        String testPath = generateCsvPath("Test");
-//        String path = generateCsvPath("");
+//        String trainPath = generateCsvPath("Train");
+//        String testPath = generateCsvPath("Test");
+        String path = generateCsvPath("");
         String key = generateUniqueConfigurationKey();
-        log.info("Going to write table to path " + trainPath + ".");
+        log.info("Going to write table to path " + path + ".");
         DataTableCsvWriter writer = new DataTableCsvWriter();
-//        writer.dataTableToCsv(new DataTableToCsvRequest(table, path, representation, TRAIN_TEST));
-        writer.dataTableToCsv(new DataTableToCsvRequest(table, trainPath, representation, TRAIN));
-        writer.dataTableToCsv(new DataTableToCsvRequest(table, testPath, representation, TEST));
-        log.info("Finished writing table to path " + trainPath + ".");
-        return new String[] {key, trainPath, testPath};
+        writer.dataTableToCsv(new DataTableToCsvRequest(table, path, representation, TRAIN_TEST));
+//        writer.dataTableToCsv(new DataTableToCsvRequest(table, trainPath, representation, TRAIN));
+//        writer.dataTableToCsv(new DataTableToCsvRequest(table, testPath, representation, TEST));
+        log.info("Finished writing table to path " + path + ".");
+        return new String[] {key, path};
     }
 
     private static DataTable getNGramDataTable(List<DumpInstance> instances, int[] ns) {

@@ -24,8 +24,6 @@ public class WekaEvaluator {
 
     private List<ClassifierType> classifiers;
     private List<List<ConfigurationEvaluation>> configurationEvaluations;
-//    private String[][] configurations;
-//    private double[][] scores;
 
     public WekaEvaluator() {
         classifiers = new ArrayList<>();
@@ -35,11 +33,9 @@ public class WekaEvaluator {
         classifiers.add(ClassifierType.BayesNetwork);
         classifiers.add(ClassifierType.LibSvm);
         configurationEvaluations = new ArrayList<>();
-        for (ClassifierType classifierType : classifiers) {
+        for (ClassifierType ignored : classifiers) {
             configurationEvaluations.add(new ArrayList<>());
         }
-//        configurations = new String[classifiers.size()][numberOfConfigurations];
-//        scores = new double[classifiers.size()][numberOfConfigurations];
     }
 
     private Classifier getClassifier(ClassifierType classifierType, double threshold) throws Exception {
@@ -76,6 +72,7 @@ public class WekaEvaluator {
     public void evaluateOnConfiguration(String configuration, List<String[]> paths) throws Exception {
         int batchSize = paths.size();
         for (int i = 0; i < classifiers.size(); i++) {
+            double[] thresholds = classifiers.get(i).equals(ClassifierType.RandomForest) ? this.thresholds : new double[] {0.5};
             for (double threshold : thresholds) {
                 double sumTruePositive = 0;
                 double sumFalsePositive = 0;
