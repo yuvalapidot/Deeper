@@ -35,11 +35,11 @@ public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
 
-    private static final String jsonsDirectoryPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Jsons";
-    private static final String datasetOutputPath = "C:\\Users\\yuval\\Dropbox\\Deeper\\Datasets Best Configurations\\";
+    private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\All Jsons\\_1_IIS_Baseline1";
+    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\All Datasets\\_1_IIS_Baseline1_NGRAM\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
-    private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera"};
+    private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera" };
 
     private static final int sampleSize = 100;
 
@@ -73,32 +73,32 @@ public class Main {
         int maxSequenceLength = 4;
         int[] minSupports = {100};
         int maxSupport = 50000;
-        int[] binsNumbers = new int[] {3, 4};
-        double[] thresholds = {0, 0.5};
+        int[] binsNumbers = new int[] {3, 4, 5, 6, 7};
+        double[] thresholds = {0, 0.5, 1};
         double[] correlationRatios = {1, 0.9, 0.8};
         double trainPercentage = 0.8;
         BatchType batchType = BatchType.State_Batch;
         Map<String, List<String[]>> map = new LinkedHashMap<>();
         for (int minSupport : minSupports) {
-            DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
-            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+//            DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+//            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 //            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
 //            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
 //            map.putAll(UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios));
 //            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
-            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+//            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 
-//            for (int[] n : nss) {
-//                table = createDataTable(n);
+            for (int[] n : nss) {
+                DataTable table = createDataTable(n);
 //                KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 //                UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
 //                UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
-//                UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+                UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
 //                AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
 //                MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
-//            }
+            }
 //
-//            table = createDataTable(ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+//            DataTable table = createDataTable(ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
 //            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 //            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
 //            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
@@ -323,9 +323,9 @@ public class Main {
                 Ranker ranker = new Ranker(new FishersScoreRanker());
                 keyPath.addAll(rankAndWriteDataTable(table, ranker, threshold, correlationRatio));
                 IDistanceMeasure[] measures = {
-//                        new EntropyDistance(),
+                        new EntropyDistance(),
                         new CosineDistance(),
-//                        new KullbackLeiblerDistance()
+                        new KullbackLeiblerDistance()
                 };
                 for (IDistanceMeasure measure : measures) {
                     for (int bins : binsNumbers) {
@@ -376,10 +376,10 @@ public class Main {
         List<String[]> keyPath = new ArrayList<>();
         DataTable rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Binary_Representation, correlationRatio);
         keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Binary_Representation));
-//        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Integer_Representation, correlationRatio);
-//        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Integer_Representation));
-//        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TF_Representation, correlationRatio);
-//        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TF_Representation));
+        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.Integer_Representation, correlationRatio);
+        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.Integer_Representation));
+        rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TF_Representation, correlationRatio);
+        keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TF_Representation));
         rankedTable = rankDataTable(table, ranker, threshold, CsvNumberRepresentation.TFIDF_Representation, correlationRatio);
         keyPath.add(writeDataTable(rankedTable, CsvNumberRepresentation.TFIDF_Representation));
         return keyPath;

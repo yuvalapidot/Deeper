@@ -11,6 +11,6 @@ public class CrashDumpFileFlag implements IFlag {
 
     @Override
     public String getFlagString() {
-        return FLAG + path;
+        return FLAG + "\"" + path + "\"";
     }
 }

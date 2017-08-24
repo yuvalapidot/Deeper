@@ -14,6 +14,9 @@ public class VoidWinDbgExtractor extends AbstractWinDbgExtractor {
         String line;
         while ((line = readLine(reader)) != null) {
             log.trace(line);
+            if (line.contains(errorString)) {
+                log.warn("Encountered an error during the loading of DMP file: " + line);
+            }
         }
         return null;
     }

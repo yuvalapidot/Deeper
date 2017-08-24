@@ -13,6 +13,7 @@ import sequence.ISequenceFinder;
 import sequence.PrefixSpanSequenceFinder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
@@ -21,6 +22,8 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
     private int minimumSequenceLength;
     private int maximumSequenceLength;
     private int batchSize;
+
+    private boolean useBatchSizeForSupport = false;
 
     private final Logger log = LogManager.getLogger(SequenceExtractor.class);
 
@@ -75,7 +78,13 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
     private void getAllSequences(DataTable table) {
         int i = 0;
         for (Set<DumpInstance> dumpBatch : getDumpsBatches()) {
-            ISequenceFinder finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
+            ISequenceFinder finder;
+            if (useBatchSizeForSupport) {
+                finder = new PrefixSpanSequenceFinder(dumpBatch.size(), maximumSupport, minimumSequenceLength, maximumSequenceLength);
+            } else {
+                finder = new PrefixSpanSequenceFinder(minimumSupport, maximumSupport, minimumSequenceLength, maximumSequenceLength);
+            }
+
             log.info("Starting on batch " + i + ".");
             long startTime = new Date().getTime();
             Map<Sequence, List<Pair<DumpInstance, Integer>>> batchSequences = getAllDumpsSequences(dumpBatch, finder, false);
@@ -94,6 +103,11 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
 
     private List<Set<DumpInstance>> getDumpsBatches() {
         List<Set<DumpInstance>> batches = new ArrayList<>();
+        if (instanceMap != null) {
+            batches.addAll(instanceMap.values().stream().map(HashSet::new).collect(Collectors.toList()));
+            return batches;
+        }
+
         int counter = 0;
         Set<DumpInstance> batch = new LinkedHashSet<>();
         for (DumpInstance instance : instances) {
@@ -135,4 +149,11 @@ public class SequenceExtractor extends AbstractFeatureExtractor<DumpInstance> {
         }
     }
 
+    public boolean isUseBatchSizeForSupport() {
+        return useBatchSizeForSupport;
+    }
+
+    public void setUseBatchSizeForSupport(boolean useBatchSizeForSupport) {
+        this.useBatchSizeForSupport = useBatchSizeForSupport;
+    }
 }

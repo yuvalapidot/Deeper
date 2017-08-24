@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class JsonDumpWriter {
 
     private static final long DUMP_PROCESS_TIME = 10;
+    private static final int MAX_NUMBER_OF_THREADS = 32;
     private final Logger log = LogManager.getLogger(JsonDumpWriter.class);
 
     /**
@@ -37,7 +38,7 @@ public class JsonDumpWriter {
             dump = WinDbgAPI.getDump(request.getDumpPath());
         } catch (IOException e) {
             log.error("Encountered an error while trying to process Dump: " + request.getDumpPath(), e);
-            throw e;
+            dump = new Dump(request.getDumpPath());
         }
         log.info("Finished processing Dump: " + request.getDumpPath());
         ObjectMapper mapper = new ObjectMapper();
@@ -61,7 +62,7 @@ public class JsonDumpWriter {
         log.info("Trying to parse " + requests.size() + " Dumps into JSONs");
         int count = 0;
         if (parallel) {
-            ExecutorService executor = Executors.newFixedThreadPool(8);
+            ExecutorService executor = Executors.newFixedThreadPool(MAX_NUMBER_OF_THREADS);
             for (DumpToJsonRequest request : requests) {
                 executor.submit(new RunnableJsonDumpWriter(request));
             }

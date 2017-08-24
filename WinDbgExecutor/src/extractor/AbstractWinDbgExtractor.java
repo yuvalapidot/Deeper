@@ -9,8 +9,9 @@ public abstract class AbstractWinDbgExtractor<T> implements IExtractor<T> {
 
     protected final Logger log = LogManager.getLogger(getClass());
 
-    private static String regexString = "([0-9]*: )?kd> ";
+    private static String regexString = "([0-9]*\\.?[0-9]*: )?kd(:x[0-9]*)?> ";
     private static int kdLineLength = 4;
+    protected static String errorString = "*** ERROR";
 
     public T extract(String input) {
         BufferedReader bufferedReader = new BufferedReader(new StringReader(input));
