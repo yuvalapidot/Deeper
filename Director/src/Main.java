@@ -35,11 +35,11 @@ public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
 
-    private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\All Jsons\\_1_IIS_Baseline1";
-    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\All Datasets\\_1_IIS_Baseline1_NGRAM\\";
+    private static final String jsonsDirectoryPath = "D:\\Dropbox\\Deeper\\All Jsons\\_8_Email_Baseline_RAT_All_Commands";
+    private static final String datasetOutputPath = "D:\\Dropbox\\Deeper\\All Datasets\\_8_Email_Baseline_RAT_All_Commands\\";
 
     private static final String[] benignNames = { "Baseline", "Defrag", "Procmon", "Avast", "Wireshark" };
-    private static final String[] maliciousNames = { "HiddenTear", "Cerber", "TeslaCrypt", "Vipasana", "Chimera" };
+    private static final String[] maliciousNames = { "Babylon", "Comet", "Dark", "Pandora", "SpyGate" };
 
     private static final int sampleSize = 100;
 
@@ -80,22 +80,22 @@ public class Main {
         BatchType batchType = BatchType.State_Batch;
         Map<String, List<String[]>> map = new LinkedHashMap<>();
         for (int minSupport : minSupports) {
-//            DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
-//            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
-//            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
-//            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
-//            map.putAll(UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios));
-//            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
-//            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+            DataTable table = createDataTable(minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
+            KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+            UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+            UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
+            map.putAll(UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios));
+            AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
+            MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
 
             for (int[] n : nss) {
-                DataTable table = createDataTable(n);
-//                KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
-//                UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
-//                UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
+                table = createDataTable(n);
+                KnownMalwareDetection(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+                UnknownMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
+                UnknownBenignDetection(table, binsNumbers, thresholds, correlationRatios);
                 UnknownBenignAndMalwareDetection(table, binsNumbers, thresholds, correlationRatios);
-//                AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
-//                MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
+                AnomalyDetection(table, binsNumbers, thresholds, correlationRatios);
+                MalwareClassification(table, trainPercentage, binsNumbers, thresholds, correlationRatios);
             }
 //
 //            DataTable table = createDataTable(ns, minSequenceLength, maxSequenceLength, minSupport, maxSupport, batchType);
